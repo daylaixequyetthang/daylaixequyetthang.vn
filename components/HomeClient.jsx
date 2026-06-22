@@ -29,7 +29,7 @@ export default function HomeClient() {
         <div className="hdr-in">
           <a href="#top" className="brand">
             <img src="/logo.png" alt="Logo Quyết Thắng" className="mk-logo" />
-            <span>Lái Xe Quyết Thắng<small>Trung tâm GDNN · Bình Thuận</small></span>
+            <span>Học Lái Xe Quyết Thắng<small>Đào tạo lái xe · Bình Thuận</small></span>
           </a>
           <nav className="nav">
             <a href="#why">Vì sao chọn</a>
@@ -313,7 +313,7 @@ export default function HomeClient() {
           <div className="ft-grid">
             <div>
               <a href="#top" className="brand" style={{ color: '#fff', marginBottom: 14 }}>
-                <img src="/logo.png" alt="Logo Quyết Thắng" className="mk-logo" /><span style={{ color: '#fff' }}>Lái Xe Quyết Thắng<small style={{ color: '#6f739a' }}>Trung tâm GDNN Quyết Thắng</small></span>
+                <img src="/logo.png" alt="Logo Quyết Thắng" className="mk-logo" /><span style={{ color: '#fff' }}>Học Lái Xe Quyết Thắng<small style={{ color: '#6f739a' }}>Đào tạo lái xe · Bình Thuận</small></span>
               </a>
               <p>Đào tạo lái xe mô tô, ô tô, xe tải các hạng tại Bình Thuận. Hơn 18 năm uy tín, học phí trọn gói, tỷ lệ đậu cao.</p>
               <div className="ft-social">
@@ -359,8 +359,8 @@ export default function HomeClient() {
 
       {/* STICKY + FLOAT + WHEEL */}
       <div className="sticky-cta">
-        <a href="/tra-cuu" className="c1">📅 Tra cứu lịch</a>
-        <a href="/dang-ky" className="c2">Đăng ký & cọc</a>
+        <a href="/uu-dai-he" className="c1">🎁 Ưu đãi hè</a>
+        <a href="/dang-ky" className="c2">Đăng Ký Ngay</a>
       </div>
       <button className="float-wheel" onClick={() => setWheel(true)} aria-label="Quay số trúng thưởng">🎡</button>
 

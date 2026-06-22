@@ -1,6 +1,7 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { trackEvent } from '@/lib/track';
+import { captureTracking, getTracking } from '@/lib/tracking';
 
 const COURSE_OPTIONS = [
   'Hạng B – số tự động',
@@ -20,6 +21,8 @@ export default function LeadForm({ onSpin }) {
   const [status, setStatus] = useState('idle'); // idle | sending | ok | err
   const [msg, setMsg] = useState('');
 
+  useEffect(() => { captureTracking(); }, []);
+
   async function submit(e) {
     e.preventDefault();
     const p = phone.replace(/\s+/g, '');
@@ -32,7 +35,7 @@ export default function LeadForm({ onSpin }) {
       const r = await fetch('/api/lead', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, phone: p, course, source: 'form' }),
+        body: JSON.stringify({ name, phone: p, course, need: course, source: 'form', tracking: getTracking() }),
       });
       const d = await r.json();
       if (d.ok) {
