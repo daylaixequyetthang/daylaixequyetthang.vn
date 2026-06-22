@@ -2,11 +2,18 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 
-export default function PostEditor() {
+// Dùng cho cả TẠO MỚI (không có initial) và SỬA (có initial + id).
+export default function PostEditor({ initial = null }) {
   const router = useRouter();
+  const isEdit = !!initial?.id;
   const [f, setF] = useState({
-    title: '', excerpt: '', content: '', cover_url: '',
-    category: 'tin-tuc', meta_title: '', meta_description: '',
+    title: initial?.title || '',
+    excerpt: initial?.excerpt || '',
+    content: initial?.content || '',
+    cover_url: initial?.cover_url || '',
+    category: initial?.category || 'tin-tuc',
+    meta_title: initial?.meta_title || '',
+    meta_description: initial?.meta_description || '',
   });
   const [saving, setSaving] = useState(false);
   const [err, setErr] = useState('');
@@ -18,9 +25,14 @@ export default function PostEditor() {
     setErr(''); setSaving(true);
     try {
       const r = await fetch('/api/posts', {
-        method: 'POST',
+        method: isEdit ? 'PUT' : 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...f, status }),
+        body: JSON.stringify({
+          ...f,
+          status,
+          id: initial?.id,
+          published_at: initial?.published_at,
+        }),
       });
       const d = await r.json();
       if (d.ok) router.push('/admin/posts');
@@ -32,10 +44,11 @@ export default function PostEditor() {
   return (
     <>
       <div className="adm-h">
-        <h1>Viết bài mới</h1>
+        <h1>{isEdit ? 'Sửa bài viết' : 'Viết bài mới'}</h1>
         <div style={{ display: 'flex', gap: 10 }}>
+          <a href="/admin/posts" className="btn" style={{ padding: '11px 18px', background: '#fff', border: '1.5px solid var(--line)', color: 'var(--ink-soft)' }}>← Quay lại</a>
           <button className="btn" style={{ padding: '11px 18px', background: '#fff', border: '1.5px solid var(--line)', color: 'var(--ink-soft)' }} onClick={() => save('draft')} disabled={saving}>Lưu nháp</button>
-          <button className="btn btn-cta" style={{ padding: '11px 20px' }} onClick={() => save('published')} disabled={saving}>{saving ? 'Đang lưu...' : 'Đăng bài'}</button>
+          <button className="btn btn-cta" style={{ padding: '11px 20px' }} onClick={() => save('published')} disabled={saving}>{saving ? 'Đang lưu...' : (isEdit ? 'Cập nhật & đăng' : 'Đăng bài')}</button>
         </div>
       </div>
 
@@ -58,11 +71,14 @@ export default function PostEditor() {
             <select className="adm-select" value={f.category} onChange={up('category')}>
               <option value="tin-tuc">Tin tức</option>
               <option value="kinh-nghiem">Kinh nghiệm</option>
+              <option value="huong-dan">Hướng dẫn</option>
+              <option value="kien-thuc">Kiến thức</option>
               <option value="luat-moi">Luật mới</option>
               <option value="seo">Bài SEO</option>
             </select>
             <label className="adm-label">Ảnh bìa (URL)</label>
             <input className="adm-input" value={f.cover_url} onChange={up('cover_url')} placeholder="https://..." />
+            {f.cover_url && <img src={f.cover_url} alt="" style={{ width: '100%', borderRadius: 10, marginTop: 8 }} />}
           </div>
           <div className="adm-card">
             <h3 style={{ fontSize: '1rem', marginBottom: 12 }}>SEO</h3>

@@ -6,10 +6,11 @@ import { buildVietQRUrl, genOrderCode } from '@/lib/vietqr';
 
 // Cấu hình thanh toán mặc định (fallback khi chưa có Supabase).
 const FALLBACK_PAY = {
-  bank_id: '970436',
-  bank_name: 'Vietcombank',
-  account_no: '0123456789',
-  account_name: 'TRUNG TAM DAO TAO LAI XE QUYET THANG',
+  // STK thật của trung tâm. LƯU Ý: bank_id cần đúng mã ngân hàng (xem ghi chú dưới).
+  bank_id: process.env.PAY_BANK_ID || '970418', // 970418 = BIDV (đoán theo STK 611x). Đổi nếu sai.
+  bank_name: process.env.PAY_BANK_NAME || 'BIDV',
+  account_no: process.env.PAY_ACCOUNT_NO || '6110370681',
+  account_name: process.env.PAY_ACCOUNT_NAME || 'CONG TY CO PHAN TONG HOP QUYET THANG',
   deposit_default: 2000000,
   template: 'compact2',
 };

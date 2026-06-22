@@ -22,7 +22,11 @@ export default async function SettingsPage() {
   const wheel = await load('wheel', { enabled: true, segments: [] });
   const banners = await load('banners', { items: [] });
   const social = await load('social', {});
+  const payment = await load('payment', {
+    bank_id: '970418', bank_name: 'BIDV', account_no: '6110370681',
+    account_name: 'CONG TY CO PHAN TONG HOP QUYET THANG', deposit_default: 2000000, template: 'compact2',
+  });
   const connected = !!process.env.SUPABASE_SERVICE_ROLE_KEY;
 
-  return <SettingsClient wheel={wheel} banners={banners} social={social} connected={connected} />;
+  return <SettingsClient wheel={wheel} banners={banners} social={social} payment={payment} connected={connected} />;
 }

@@ -17,7 +17,7 @@ export async function POST(req) {
   const auth = await requireRole(['admin']);
   if (!auth.ok) return NextResponse.json({ error: auth.error }, { status: auth.status });
   const { key, value } = await req.json();
-  if (!['wheel', 'banners', 'social'].includes(key)) {
+  if (!['wheel', 'banners', 'social', 'payment'].includes(key)) {
     return NextResponse.json({ error: 'Key không hợp lệ' }, { status: 400 });
   }
   const sb = supabaseAdmin();

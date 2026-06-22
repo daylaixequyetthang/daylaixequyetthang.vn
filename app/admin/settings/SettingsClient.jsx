@@ -1,10 +1,11 @@
 'use client';
 import { useState } from 'react';
 
-export default function SettingsClient({ wheel, banners, social, connected }) {
+export default function SettingsClient({ wheel, banners, social, payment, connected }) {
   const [segs, setSegs] = useState(wheel.segments || []);
   const [bans, setBans] = useState(banners.items || []);
   const [soc, setSoc] = useState(social || {});
+  const [pay, setPay] = useState(payment || {});
   const [msg, setMsg] = useState('');
   const [saving, setSaving] = useState('');
 
@@ -80,17 +81,66 @@ export default function SettingsClient({ wheel, banners, social, connected }) {
       {/* SOCIAL */}
       <div className="adm-card">
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-          <h3>🔗 Link mạng xã hội</h3>
+          <h3>🔗 Link mạng xã hội & Hotline</h3>
           <button className="btn btn-cta" style={{ padding: '10px 18px' }} disabled={saving === 'social'} onClick={() => saveKey('social', soc)}>
-            {saving === 'social' ? 'Đang lưu...' : 'Lưu link'}
+            {saving === 'social' ? 'Đang lưu...' : 'Lưu thông tin'}
           </button>
         </div>
-        {['facebook', 'youtube', 'tiktok', 'zalo', 'phone'].map((k) => (
+        {[
+          { k: 'phone', lb: 'Hotline / Zalo', ph: '0848751111' },
+          { k: 'facebook', lb: 'Facebook', ph: 'https://facebook.com/...' },
+          { k: 'messenger', lb: 'Messenger', ph: 'https://m.me/...' },
+          { k: 'zalo', lb: 'Zalo', ph: 'https://zalo.me/...' },
+          { k: 'youtube', lb: 'YouTube', ph: 'https://youtube.com/...' },
+          { k: 'tiktok', lb: 'TikTok', ph: 'https://tiktok.com/@...' },
+        ].map(({ k, lb, ph }) => (
           <div key={k}>
-            <label className="adm-label" style={{ textTransform: 'capitalize' }}>{k}</label>
-            <input className="adm-input" value={soc[k] || ''} onChange={(e) => setSoc((s) => ({ ...s, [k]: e.target.value }))} placeholder={k === 'phone' ? '0848751111' : `https://...`} />
+            <label className="adm-label">{lb}</label>
+            <input className="adm-input" value={soc[k] || ''} onChange={(e) => setSoc((s) => ({ ...s, [k]: e.target.value }))} placeholder={ph} />
           </div>
         ))}
+      </div>
+
+      {/* THANH TOÁN / QR */}
+      <div className="adm-card">
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+          <h3>💳 Tài khoản nhận đặt cọc (QR)</h3>
+          <button className="btn btn-cta" style={{ padding: '10px 18px' }} disabled={saving === 'payment'} onClick={() => saveKey('payment', pay)}>
+            {saving === 'payment' ? 'Đang lưu...' : 'Lưu thông tin'}
+          </button>
+        </div>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+          <div>
+            <label className="adm-label">Mã ngân hàng (BIN)</label>
+            <input className="adm-input" value={pay.bank_id || ''} onChange={(e) => setPay((s) => ({ ...s, bank_id: e.target.value }))} placeholder="970418 (BIDV)" />
+          </div>
+          <div>
+            <label className="adm-label">Tên ngân hàng</label>
+            <input className="adm-input" value={pay.bank_name || ''} onChange={(e) => setPay((s) => ({ ...s, bank_name: e.target.value }))} placeholder="BIDV" />
+          </div>
+          <div>
+            <label className="adm-label">Số tài khoản</label>
+            <input className="adm-input" value={pay.account_no || ''} onChange={(e) => setPay((s) => ({ ...s, account_no: e.target.value }))} placeholder="6110370681" />
+          </div>
+          <div>
+            <label className="adm-label">Số tiền cọc mặc định</label>
+            <input className="adm-input" type="number" value={pay.deposit_default || 2000000} onChange={(e) => setPay((s) => ({ ...s, deposit_default: Number(e.target.value) }))} />
+          </div>
+        </div>
+        <label className="adm-label">Tên chủ tài khoản (viết HOA, không dấu)</label>
+        <input className="adm-input" value={pay.account_name || ''} onChange={(e) => setPay((s) => ({ ...s, account_name: e.target.value }))} placeholder="CONG TY CO PHAN TONG HOP QUYET THANG" />
+
+        <div style={{ marginTop: 16, padding: 16, background: '#fafaff', borderRadius: 12, textAlign: 'center' }}>
+          <p style={{ fontSize: '.85rem', color: 'var(--muted)', marginBottom: 10 }}>Xem trước mã QR (sẽ hiện cho khách khi đặt cọc):</p>
+          {pay.bank_id && pay.account_no ? (
+            <img
+              src={`https://img.vietqr.io/image/${pay.bank_id}-${pay.account_no}-${pay.template || 'compact2'}.png?amount=${pay.deposit_default || 2000000}&addInfo=QT-XXXX&accountName=${encodeURIComponent(pay.account_name || '')}`}
+              alt="QR xem trước"
+              style={{ width: 220, height: 220, objectFit: 'contain', borderRadius: 12, background: '#fff' }}
+            />
+          ) : <p style={{ color: 'var(--muted)' }}>Nhập mã ngân hàng + STK để xem QR.</p>}
+          <p style={{ fontSize: '.78rem', color: 'var(--muted)', marginTop: 8 }}>Mã ngân hàng (BIN) tra tại vietqr.io. VD: BIDV=970418, Vietcombank=970436, Techcombank=970407, MB=970422, ACB=970416, Agribank=970405.</p>
+        </div>
       </div>
     </>
   );
