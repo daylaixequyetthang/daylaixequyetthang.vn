@@ -1,0 +1,28 @@
+.cn{min-height:100vh;background:var(--bg)}
+.cn-hdr{position:sticky;top:0;z-index:30;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 20px;background:rgba(255,255,255,.9);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+.cn-back{color:var(--blue);font-weight:700;text-decoration:none}
+.cn-hdr b{color:var(--ink)}
+.cn-cta{background:var(--grad-cta);color:#fff;padding:9px 16px;border-radius:999px;font-weight:700;font-size:.85rem;text-decoration:none}
+.cn-wrap{max-width:760px;margin:0 auto;padding:32px 20px 60px}
+.cn-tag{display:inline-block;background:rgba(37,99,255,.1);color:var(--blue);font-weight:800;font-size:.72rem;letter-spacing:.6px;padding:7px 14px;border-radius:999px;margin-bottom:16px}
+.cn-wrap h1{font-family:var(--font-display);font-size:2rem;line-height:1.25;color:var(--ink);margin-bottom:16px}
+.cn-lead{font-size:1.05rem;color:var(--ink-soft);line-height:1.7;margin-bottom:28px}
+.cn-card{border-radius:18px;padding:26px;margin-bottom:22px;border:1px solid var(--line)}
+.cn-card h2{font-family:var(--font-display);font-size:1.3rem;color:var(--ink);margin-bottom:14px}
+.cn-card p{color:var(--ink-soft);line-height:1.7;margin-bottom:14px}
+.cn-now{background:linear-gradient(135deg,rgba(39,224,166,.1),rgba(37,99,255,.07))}
+.cn-future{background:linear-gradient(135deg,rgba(255,176,32,.12),rgba(255,93,115,.07))}
+.cn-noti{background:#fff;border-radius:12px;padding:14px 16px;font-size:.95rem;border:1px dashed var(--line)}
+.cn-btn{display:inline-block;background:var(--grad-hero);color:#fff;padding:13px 24px;border-radius:999px;font-weight:700;text-decoration:none;margin-top:6px}
+.cn-btn.alt{background:#fff;color:var(--violet);border:1.5px solid var(--line)}
+.cn-faq{margin:34px 0}
+.cn-faq h2{font-family:var(--font-display);font-size:1.45rem;color:var(--ink);margin-bottom:18px}
+.cn-q{background:#fff;border:1px solid var(--line);border-radius:14px;padding:18px 20px;margin-bottom:12px}
+.cn-q h3{font-size:1.05rem;color:var(--ink);margin-bottom:8px}
+.cn-q p{color:var(--ink-soft);line-height:1.65}
+.cn-q a,.cn-foot a{color:var(--blue);text-decoration:none}
+.cn-foot{margin-top:30px;padding-top:24px;border-top:1px solid var(--line)}
+.cn-foot p{color:var(--muted);font-size:.88rem;line-height:1.6;margin-bottom:8px}
+.cn-upd{font-weight:600}
+.cn-actions{display:flex;gap:12px;flex-wrap:wrap;margin-top:18px}
+@media(max-width:560px){.cn-wrap h1{font-size:1.55rem}.cn-cta{display:none}}
