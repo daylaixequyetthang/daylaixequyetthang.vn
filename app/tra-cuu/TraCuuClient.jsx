@@ -16,15 +16,15 @@ export default function TraCuuClient() {
       <section className="tc-hero">
         <div className="wrap">
           <span className="eyebrow on-dark">Tra cứu trực tuyến</span>
-          <h1>Lịch khai giảng, lịch thi & tiến độ học</h1>
-          <p>Xem lịch khai giảng sắp tới hoặc tra cứu tiến độ học của bạn bằng CCCD / số điện thoại.</p>
+          <h1>Lịch khai giảng, lịch thi & tra cứu khóa học</h1>
+          <p>Xem lịch khai giảng sắp tới hoặc tra cứu khóa học của bạn bằng số điện thoại / CCCD.</p>
         </div>
       </section>
 
       <div className="wrap tc-body">
         <div className="tc-tabs">
           <button className={tab === 'lich' ? 'on' : ''} onClick={() => setTab('lich')}>📅 Lịch khai giảng & thi</button>
-          <button className={tab === 'tien-do' ? 'on' : ''} onClick={() => setTab('tien-do')}>🎓 Tiến độ học của tôi</button>
+          <button className={tab === 'tien-do' ? 'on' : ''} onClick={() => setTab('tien-do')}>🎓 Tra cứu khóa học của tôi</button>
         </div>
         {tab === 'lich' ? <ScheduleView /> : <ProgressView />}
       </div>
@@ -141,8 +141,8 @@ function ProgressView() {
   return (
     <div className="pv">
       <div className="pv-search">
-        <h3>Tra cứu tiến độ học</h3>
-        <p>Nhập số CCCD hoặc số điện thoại đã đăng ký để xem bạn đang ở giai đoạn nào.</p>
+        <h3>Tra cứu khóa học của bạn</h3>
+        <p>Nhập số điện thoại hoặc CCCD đã đăng ký để xem hạng bằng, khóa học và ngày khóa của bạn.</p>
         <div className="pv-row">
           <input value={q} onChange={(e) => setQ(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && lookup()} placeholder="CCCD hoặc số điện thoại" inputMode="numeric" />
           <button className="btn btn-cta" onClick={lookup} disabled={loading}>{loading ? 'Đang tra...' : 'Tra cứu'}</button>
@@ -156,35 +156,25 @@ function ProgressView() {
         <div className="pv-result">
           <div className="pv-head">
             <div><span>Học viên</span><b>{res.student.name}</b></div>
-            <div><span>Khóa học</span><b>{res.student.course || '—'}</b></div>
-            {res.student.examDate && <div><span>Ngày thi dự kiến</span><b>{fmt(res.student.examDate)}</b></div>}
+            {res.student.licenseType && <div><span>Hạng bằng</span><b>{res.student.licenseType}</b></div>}
+            {res.student.courseName && <div><span>Khóa học</span><b>{res.student.courseName}</b></div>}
           </div>
 
-          <div className="pv-progress">
-            <div className="pv-pct"><b>{res.student.progress}%</b> hoàn thành lộ trình</div>
-            <div className="pv-bar"><div style={{ width: `${res.student.progress}%` }} /></div>
+          <div className="pv-info">
+            {res.student.courseDate && (
+              <div className="pv-info-row"><span>📅 Ngày khóa học</span><b>{fmt(res.student.courseDate)}</b></div>
+            )}
+            {res.student.cccd && (
+              <div className="pv-info-row"><span>🪪 CCCD</span><b>{res.student.cccd}</b></div>
+            )}
+            {res.student.phone && (
+              <div className="pv-info-row"><span>📞 Số điện thoại</span><b>{res.student.phone}</b></div>
+            )}
+            {res.student.trainingStatus && (
+              <div className="pv-info-row"><span>📚 Trạng thái học</span><b className="pv-status-val">{res.student.trainingStatus}</b></div>
+            )}
           </div>
 
-          <div className="pv-stages">
-            {res.student.stages.map((s, i) => {
-              const done = i < res.student.stageIndex;
-              const now = i === res.student.stageIndex;
-              return (
-                <div key={s.key} className={`pv-stage ${done ? 'done' : ''} ${now ? 'now' : ''}`}>
-                  <span className="pv-dot">{done ? '✓' : i + 1}</span>
-                  <span className="pv-label">{s.label}</span>
-                  {now && <span className="pv-badge">Đang ở đây</span>}
-                </div>
-              );
-            })}
-          </div>
-
-          {res.student.examResult && (
-            <div className={`pv-exam ${res.student.examResult === 'dau' ? 'pass' : 'fail'}`}>
-              Kết quả thi: <b>{res.student.examResult === 'dau' ? '🎉 ĐẬU' : 'Chưa đậu — sẽ sắp xếp thi lại'}</b>
-            </div>
-          )}
-          {res.student.note && <p className="pv-note">📌 {res.student.note}</p>}
           <p className="pv-help">Thông tin chưa đúng? Gọi <b>084 875 1111</b> để được hỗ trợ.</p>
         </div>
       )}
@@ -202,26 +192,12 @@ function ProgressView() {
         .pv-head{display:flex;gap:28px;flex-wrap:wrap;padding-bottom:20px;border-bottom:1px solid var(--line);margin-bottom:20px}
         .pv-head span{display:block;font-size:.74rem;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
         .pv-head b{font-family:var(--font-display);font-size:1.15rem;color:var(--ink)}
-        .pv-progress{margin-bottom:24px}
-        .pv-pct{font-size:.95rem;color:var(--ink-soft);margin-bottom:8px}
-        .pv-pct b{font-family:var(--font-display);font-size:1.4rem;color:var(--violet)}
-        .pv-bar{height:12px;background:var(--line);border-radius:999px;overflow:hidden}
-        .pv-bar div{height:100%;background:var(--grad-cta);border-radius:999px;transition:width .6s}
-        .pv-stages{display:flex;flex-direction:column;gap:4px;margin-bottom:18px}
-        .pv-stage{display:flex;align-items:center;gap:14px;padding:12px 14px;border-radius:12px;position:relative}
-        .pv-stage.done{opacity:.7}
-        .pv-stage.now{background:linear-gradient(135deg,rgba(91,61,245,.08),rgba(255,93,115,.06))}
-        .pv-dot{width:30px;height:30px;border-radius:50%;background:var(--line);color:var(--muted);display:grid;place-items:center;font-weight:800;font-size:.85rem;flex:0 0 auto;font-family:var(--font-display)}
-        .pv-stage.done .pv-dot{background:var(--lime);color:#fff}
-        .pv-stage.now .pv-dot{background:var(--grad-hero);color:#fff}
-        .pv-label{font-weight:600;color:var(--ink-soft)}
-        .pv-stage.now .pv-label{color:var(--ink)}
-        .pv-badge{margin-left:auto;font-size:.74rem;font-weight:700;color:var(--violet);background:rgba(139,47,230,.12);padding:4px 10px;border-radius:999px}
-        .pv-exam{padding:14px 18px;border-radius:12px;margin-bottom:14px;font-weight:600}
-        .pv-exam.pass{background:rgba(39,224,166,.14);color:#0a8f63}
-        .pv-exam.fail{background:rgba(255,176,32,.14);color:#8a5a00}
-        .pv-note{background:var(--bg);border-radius:10px;padding:12px 14px;color:var(--ink-soft);font-size:.9rem;margin-bottom:14px}
-        .pv-help{color:var(--muted);font-size:.86rem}
+        .pv-info{display:flex;flex-direction:column;gap:2px;margin-bottom:18px}
+        .pv-info-row{display:flex;justify-content:space-between;align-items:center;gap:14px;padding:13px 14px;border-radius:10px;background:var(--bg)}
+        .pv-info-row span{color:var(--ink-soft);font-size:.92rem}
+        .pv-info-row b{font-family:var(--font-display);color:var(--ink);font-size:1rem;text-align:right}
+        .pv-status-val{color:var(--violet)}
+        .pv-help{color:var(--muted);font-size:.86rem;margin-top:4px}
       `}</style>
     </div>
   );

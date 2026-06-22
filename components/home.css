@@ -3,6 +3,7 @@
 .hdr-in{display:flex;align-items:center;justify-content:space-between;padding:13px 22px;max-width:var(--maxw);margin:0 auto}
 .brand{display:flex;align-items:center;gap:12px;font-family:var(--font-display);font-weight:800;color:var(--ink);font-size:1.1rem;line-height:1}
 .brand .mk{width:44px;height:44px;border-radius:13px;background:var(--grad-hero);color:#fff;display:grid;place-items:center;font-weight:800;font-size:1.15rem;box-shadow:0 8px 18px -8px rgba(91,61,245,.7)}
+.brand .mk-logo{width:46px;height:46px;object-fit:contain;flex-shrink:0}
 .brand small{display:block;font-family:var(--font-body);font-weight:500;font-size:.64rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
 .nav{display:flex;gap:26px;align-items:center;font-weight:600;font-size:.94rem;color:var(--ink-soft)}
 .nav a{position:relative;padding:4px 0;transition:color .15s}
@@ -36,6 +37,11 @@
 .trust{display:flex;gap:24px;flex-wrap:wrap;padding-top:24px;border-top:1px solid rgba(255,255,255,.2);animation:fadeUp .7s ease .3s both}
 .trust .t b{font-family:var(--font-display);font-size:1.85rem;font-weight:800;display:block;line-height:1}
 .trust .t span{font-size:.8rem;color:rgba(255,255,255,.75)}
+@media(max-width:600px){
+  .trust{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;text-align:center}
+  .trust .t b{font-size:1.4rem}
+  .trust .t span{font-size:.68rem;line-height:1.25;display:block}
+}
 .hero-card-wrap{animation:fadeUp .8s ease .2s both}
 
 /* ===== SECTION ===== */

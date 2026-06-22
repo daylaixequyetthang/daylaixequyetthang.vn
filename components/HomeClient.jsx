@@ -28,7 +28,7 @@ export default function HomeClient() {
       <header className="hdr">
         <div className="hdr-in">
           <a href="#top" className="brand">
-            <span className="mk">QT</span>
+            <img src="/logo.png" alt="Logo Quyết Thắng" className="mk-logo" />
             <span>Lái Xe Quyết Thắng<small>Trung tâm GDNN · Bình Thuận</small></span>
           </a>
           <nav className="nav">
@@ -91,7 +91,7 @@ export default function HomeClient() {
           <Reveal className="sec-head">
             <span className="eyebrow">Vì sao chọn Quyết Thắng</span>
             <h2>Đào tạo bài bản, học phí minh bạch, đậu là có bằng</h2>
-            <p>Hơn 18 năm tiên phong đào tạo lái xe tại Bình Thuận, là trung tâm sát hạch được cơ quan có thẩm quyền chỉ định.</p>
+            <p>Hơn 18 năm tiên phong đào tạo lái xe tại Bình Thuận, là trung tâm đào tạo lái xe uy tín được nhiều học viên tin tưởng.</p>
           </Reveal>
           <div className="feat-grid">
             {FEATURES.map((f, i) => (
@@ -108,7 +108,7 @@ export default function HomeClient() {
       <section className="sec courses" id="courses">
         <div className="wrap">
           <Reveal className="sec-head">
-            <span className="eyebrow">Bảng học phí 2025/2026</span>
+            <span className="eyebrow">Học Phí</span>
             <h2>Chọn hạng bằng phù hợp với bạn</h2>
             <p>Học phí trọn gói, đã cập nhật theo khung GPLX mới. Liên hệ để nhận báo giá & ưu đãi mới nhất.</p>
           </Reveal>
@@ -135,7 +135,7 @@ export default function HomeClient() {
             </div>
           </Reveal>
 
-          <p className="note">A1 đóng thêm 245.000đ lệ phí thi & cấp GPLX (185.000đ nếu đã có bằng ô tô) theo quy định Bộ Công an. Hạng B/C1 khi thi sát hạch tại sân Công an đóng 745.000đ cấp bằng. Liên hệ <b>{PHONE_DISPLAY}</b> để nhận báo giá chính xác nhất.</p>
+          <p className="note">Liên hệ <b>{PHONE_DISPLAY}</b> để được tư vấn và nhận báo giá chính xác nhất theo từng hạng.</p>
         </div>
       </section>
 
@@ -313,7 +313,7 @@ export default function HomeClient() {
           <div className="ft-grid">
             <div>
               <a href="#top" className="brand" style={{ color: '#fff', marginBottom: 14 }}>
-                <span className="mk">QT</span><span style={{ color: '#fff' }}>Lái Xe Quyết Thắng<small style={{ color: '#6f739a' }}>Trung tâm GDNN Quyết Thắng</small></span>
+                <img src="/logo.png" alt="Logo Quyết Thắng" className="mk-logo" /><span style={{ color: '#fff' }}>Lái Xe Quyết Thắng<small style={{ color: '#6f739a' }}>Trung tâm GDNN Quyết Thắng</small></span>
               </a>
               <p>Đào tạo lái xe mô tô, ô tô, xe tải các hạng tại Bình Thuận. Hơn 18 năm uy tín, học phí trọn gói, tỷ lệ đậu cao.</p>
               <div className="ft-social">

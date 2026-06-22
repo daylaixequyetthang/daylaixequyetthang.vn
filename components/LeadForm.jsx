@@ -68,7 +68,7 @@ export default function LeadForm({ onSpin }) {
 
       {msg && <p className={`lf-msg ${status}`}>{msg}</p>}
 
-      <button type="button" className="lf-spin" onClick={onSpin}>🎁 Quay số trúng ưu đãi học phí hôm nay</button>
+      <button type="button" className="lf-spin" onClick={onSpin}>🎁 QUAY SỐ TRÚNG ƯU ĐÃI HỌC PHÍ</button>
       <p className="lf-fine">Hoặc Zalo trực tiếp: <b>084 875 1111</b> · Tư vấn không mất phí</p>
 
       <style jsx>{`
@@ -82,8 +82,9 @@ export default function LeadForm({ onSpin }) {
         .lf-msg{font-size:.86rem;margin-top:12px;text-align:center;padding:10px;border-radius:10px}
         .lf-msg.ok{background:rgba(39,224,166,.14);color:#0a8f63}
         .lf-msg.err{background:rgba(255,93,115,.12);color:#d83a52}
-        .lf-spin{display:block;width:100%;text-align:center;margin-top:14px;font-family:var(--font-display);font-weight:700;color:var(--coral);background:none;border:0;font-size:.92rem}
-        .lf-spin:hover{text-decoration:underline}
+        .lf-spin{display:flex;align-items:center;justify-content:center;gap:6px;width:100%;text-align:center;margin-top:14px;font-family:var(--font-display);font-weight:800;color:#7a3b00;background:linear-gradient(135deg,#ffd54a,#ffb020);border:0;font-size:1rem;padding:13px 16px;border-radius:13px;cursor:pointer;box-shadow:0 10px 24px -8px rgba(255,176,32,.7);animation:spinPulse 1.8s ease-in-out infinite}
+        .lf-spin:hover{transform:translateY(-1px);filter:brightness(1.05)}
+        @keyframes spinPulse{0%,100%{box-shadow:0 10px 24px -8px rgba(255,176,32,.7)}50%{box-shadow:0 10px 30px -6px rgba(255,176,32,.95)}}
         .lf-fine{font-size:.76rem;color:var(--muted);text-align:center;margin-top:12px}
       `}</style>
     </form>
