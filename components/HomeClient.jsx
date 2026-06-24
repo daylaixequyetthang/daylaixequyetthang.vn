@@ -2,6 +2,7 @@
 import './home.css';
 import { useState } from 'react';
 import Reveal from './Reveal';
+import SiteHeader from './SiteHeader';
 import LeadForm from './LeadForm';
 import LuckyWheel from './LuckyWheel';
 import ChatBot from './ChatBot';
@@ -25,36 +26,7 @@ export default function HomeClient() {
   return (
     <>
       {/* HEADER */}
-      <header className="hdr">
-        <div className="hdr-in">
-          <a href="#top" className="brand">
-            <img src="/logo.png" alt="Logo Quyết Thắng" className="mk-logo" />
-            <span>Học Lái Xe Quyết Thắng<small>Đào tạo lái xe · Bình Thuận</small></span>
-          </a>
-          <nav className="nav">
-            <a href="#why">Vì sao chọn</a>
-            <a href="#courses">Học phí</a>
-            <a href="/tra-cuu">Tra cứu lịch</a>
-            <a href="/thi-thu">Thi thử 600 câu</a>
-            <a href="/tin-tuc">Tin tức</a>
-            <a href="#contact">Liên hệ</a>
-          </nav>
-          <div className="hdr-cta">
-            <a href={`tel:${PHONE}`} className="hphone">{PHONE_DISPLAY}<small>Hotline / Zalo</small></a>
-            <a href="/dang-ky" className="btn btn-blue" style={{ padding: '11px 20px' }}>Đăng ký</a>
-            <button className="burger" aria-label="Menu" onClick={() => setMenu((m) => !m)}><span /><span /><span /></button>
-          </div>
-        </div>
-        <nav className={`mmenu ${menu ? 'open' : ''}`} onClick={() => setMenu(false)}>
-          <a href="#why">Vì sao chọn</a>
-          <a href="#courses">Học phí</a>
-          <a href="/tra-cuu">Tra cứu lịch</a>
-          <a href="/thi-thu">Thi thử 600 câu</a>
-          <a href="/tin-tuc">Tin tức</a>
-          <a href="#contact">Liên hệ</a>
-          <a href="/dang-ky">Đăng ký & đặt cọc</a>
-        </nav>
-      </header>
+      <SiteHeader home={true} />
 
       {/* BANNER MARQUEE */}
       <div className="marq">
@@ -78,7 +50,7 @@ export default function HomeClient() {
             <div className="trust">
               <div className="t"><b>18</b><span>năm kinh nghiệm</span></div>
               <div className="t"><b>35.000+</b><span>học viên đã cấp bằng</span></div>
-              <div className="t"><b>3</b><span>văn phòng ghi danh</span></div>
+              <div className="t"><b>Online</b><span>hoặc VP gần bạn</span></div>
             </div>
           </div>
           <div className="hero-card-wrap"><LeadForm onSpin={() => setWheel(true)} /></div>
@@ -244,7 +216,7 @@ export default function HomeClient() {
       </section>
 
       {/* CONTACT */}
-      <section className="sec" id="contact">
+      <section className="sec" id="lien-he">
         <div className="wrap">
           <Reveal className="sec-head"><span className="eyebrow">Liên hệ</span><h2>Đăng ký online — tư vấn tận nơi</h2></Reveal>
           <div className="contact-grid">
@@ -266,9 +238,9 @@ export default function HomeClient() {
             </Reveal>
           </div>
 
-          {/* 3 văn phòng - map nhỏ + chỉ đường (phụ, không phải trọng tâm) */}
+          {/* Văn phòng tiêu biểu - map nhỏ + chỉ đường (phụ, không phải trọng tâm) */}
           <div className="off-wrap">
-            <h3 className="off-title">3 văn phòng ghi danh trực tiếp <span>(nếu bạn muốn đến tận nơi)</span></h3>
+            <h3 className="off-title">Một số văn phòng ghi danh <span>(hoặc đăng ký online — tư vấn tận nơi)</span></h3>
             <div className="off-grid">
               {OFFICES.map((o, i) => (
                 <div key={i} className="off-card">
@@ -313,7 +285,7 @@ export default function HomeClient() {
           <div className="ft-grid">
             <div>
               <a href="#top" className="brand" style={{ color: '#fff', marginBottom: 14 }}>
-                <img src="/logo.png" alt="Logo Quyết Thắng" className="mk-logo" /><span style={{ color: '#fff' }}>Học Lái Xe Quyết Thắng<small style={{ color: '#6f739a' }}>Đào tạo lái xe · Bình Thuận</small></span>
+                <img src="/logo.png" alt="Logo Quyết Thắng" className="mk-logo" /><span style={{ color: '#fff' }}>Dạy Lái Xe Quyết Thắng<small style={{ color: '#6f739a' }}>Đào tạo lái xe các hạng</small></span>
               </a>
               <p>Đào tạo lái xe mô tô, ô tô, xe tải các hạng tại Bình Thuận. Hơn 18 năm uy tín, học phí trọn gói, tỷ lệ đậu cao.</p>
               <div className="ft-social">

@@ -1,5 +1,7 @@
 import { supabasePublic } from '@/lib/supabase';
 import { POSTS } from '@/lib/posts';
+import SiteHeader from '@/components/SiteHeader';
+import '@/components/home.css';
 import './tintuc.css';
 
 export const metadata = {
@@ -18,7 +20,12 @@ async function getPosts() {
       .eq('status', 'published')
       .order('published_at', { ascending: false })
       .limit(60);
-    return data && data.length ? data : POSTS;
+
+    const dbPosts = data || [];
+    // Gộp: bài từ DB (mới, do admin tạo) + 30 bài SEO tĩnh, bỏ trùng slug.
+    const dbSlugs = new Set(dbPosts.map((p) => p.slug));
+    const staticOnly = POSTS.filter((p) => !dbSlugs.has(p.slug));
+    return [...dbPosts, ...staticOnly];
   } catch {
     return POSTS;
   }
@@ -28,13 +35,7 @@ export default async function TinTuc() {
   const posts = await getPosts();
   return (
     <div className="tn">
-      <header className="tn-hdr">
-        <div className="wrap tn-hdr-in">
-          <a href="/" className="tn-back">← Trang chủ</a>
-          <b>Tin tức & Kinh nghiệm</b>
-          <a href="/#dangky" className="btn btn-cta" style={{ padding: '10px 18px' }}>Đăng ký học</a>
-        </div>
-      </header>
+      <SiteHeader />
 
       <section className="tn-hero">
         <div className="wrap">
