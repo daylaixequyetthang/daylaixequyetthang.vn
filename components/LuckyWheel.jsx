@@ -15,17 +15,15 @@ export default function LuckyWheel({ open, onClose }) {
   // tải tỷ lệ vòng quay từ API (admin chỉnh được)
   useEffect(() => {
     if (!open || segments) return;
-    fetch('/api/wheel-spin')
+    fetch('/api/wheel-spin', { cache: 'no-store' })
       .then((r) => r.json())
-      .then((d) => setSegments(d.segments || []))
+      .then((d) => setSegments(Array.isArray(d.segments) && d.segments.length ? d.segments : []))
       .catch(() =>
         setSegments([
-          { label: 'Giảm 500K', weight: 18, color: '#2563ff' },
-          { label: 'Giảm 300K', weight: 18, color: '#8b2fe6' },
           { label: 'Voucher 200K', weight: 16, color: '#ff5d73' },
-          { label: 'Giảm 1 Triệu', weight: 4, color: '#ffb020' },
+          { label: 'Giảm 300K', weight: 18, color: '#8b2fe6' },
           { label: 'Tặng tài liệu', weight: 14, color: '#27e0a6' },
-          { label: 'May mắn lần sau', weight: 4, color: '#6b7191' },
+          { label: 'May mắn lần sau', weight: 8, color: '#6b7191' },
         ])
       );
   }, [open, segments]);

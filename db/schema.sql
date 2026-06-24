@@ -105,8 +105,10 @@ alter table leads enable row level security;
 alter table site_settings enable row level security;
 
 -- Cho phép đọc công khai bài đã publish + settings (cho website)
+drop policy if exists "public read published posts" on posts;
 create policy "public read published posts" on posts
   for select using (status = 'published');
+drop policy if exists "public read settings" on site_settings;
 create policy "public read settings" on site_settings
   for select using (true);
 
@@ -213,7 +215,9 @@ alter table enrollments enable row level security;
 alter table chatbot_qa enable row level security;
 
 -- Công khai: đọc lịch (open) + chatbot active. students/enrollments KHÔNG public (tra cứu qua API server).
+drop policy if exists "public read schedules" on schedules;
 create policy "public read schedules" on schedules for select using (true);
+drop policy if exists "public read chatbot" on chatbot_qa;
 create policy "public read chatbot" on chatbot_qa for select using (is_active = true);
 
 -- Dữ liệu mẫu lịch khai giảng

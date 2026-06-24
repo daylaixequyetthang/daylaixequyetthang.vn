@@ -12,8 +12,8 @@ export default async function LeadsPage() {
   let leads = [];
   if (process.env.SUPABASE_SERVICE_ROLE_KEY) {
     const sb = supabaseAdmin();
-    const { data } = await sb.from('leads').select('*').order('created_at', { ascending: false }).limit(300);
-    leads = data || [];
+    const { data } = await sb.from('sale_leads').select('*').order('updated_at', { ascending: false }).limit(300);
+    leads = (data || []).map((r) => ({ id: r.record_id, ...(r.record || {}) }));
   }
 
   return (

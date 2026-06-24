@@ -7,19 +7,20 @@ export const dynamic = 'force-dynamic';
 async function getStats() {
   if (!process.env.SUPABASE_SERVICE_ROLE_KEY) return null;
   const sb = supabaseAdmin();
-  const [leads, newLeads, posts, published] = await Promise.all([
-    sb.from('leads').select('id', { count: 'exact', head: true }),
-    sb.from('leads').select('id', { count: 'exact', head: true }).eq('status', 'new'),
+  const [leads, posts, published] = await Promise.all([
+    sb.from('sale_leads').select('record_id', { count: 'exact', head: true }),
     sb.from('posts').select('id', { count: 'exact', head: true }),
     sb.from('posts').select('id', { count: 'exact', head: true }).eq('status', 'published'),
   ]);
-  const recent = await sb.from('leads').select('*').order('created_at', { ascending: false }).limit(8);
+  const recent = await sb.from('sale_leads').select('*').order('updated_at', { ascending: false }).limit(8);
+  const rows = (recent.data || []).map((r) => ({ id: r.record_id, ...(r.record || {}) }));
+  const newCount = rows.filter((r) => (r.status || 'Mới') === 'Mới').length;
   return {
     leads: leads.count || 0,
-    newLeads: newLeads.count || 0,
+    newLeads: newCount,
     posts: posts.count || 0,
     published: published.count || 0,
-    recent: recent.data || [],
+    recent: rows,
   };
 }
 
@@ -54,10 +55,10 @@ export default async function Dashboard() {
                 {stats.recent.map((l) => (
                   <tr key={l.id}>
                     <td>{l.name || '—'}</td>
-                    <td><b>{l.phone}</b></td>
-                    <td>{l.course || l.prize || '—'}</td>
-                    <td><span className="adm-pill new">{l.source}</span></td>
-                    <td>{new Date(l.created_at).toLocaleString('vi-VN')}</td>
+                    <td><b>{l.phone || '—'}</b></td>
+                    <td>{l.need || l.course || '—'}</td>
+                    <td><span className="adm-pill new">{l.source || 'Website'}</span></td>
+                    <td>{l.createdAt ? new Date(l.syncedAt || l.createdAt).toLocaleString('vi-VN') : '—'}</td>
                   </tr>
                 ))}
                 {stats.recent.length === 0 && <tr><td colSpan={5} style={{ textAlign: 'center', color: 'var(--muted)' }}>Chưa có lead nào.</td></tr>}
