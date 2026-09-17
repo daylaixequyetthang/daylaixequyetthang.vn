@@ -4,18 +4,18 @@ import Script from 'next/script';
 // ============================================================
 // MÃ THEO DÕI: Meta Pixel (Facebook) + Google Analytics (GA4)
 // ============================================================
-// - Meta Pixel ID đã gắn sẵn bên dưới.
+// - 2 Meta Pixel ID đang chạy song song bên dưới (cả 2 cùng nhận dữ liệu mỗi lượt xem trang).
 // - Google Analytics: điền mã đo lường GA4 (dạng G-XXXXXXX) vào biến môi trường
 //   NEXT_PUBLIC_GA_ID trong file .env (hoặc trong phần Environment Variables của Vercel).
 //   Nếu chưa điền, GA tự bỏ qua, không ảnh hưởng web.
 
-const META_PIXEL_ID = '1311091366692533';
+const META_PIXEL_IDS = ['1311091366692533', '1089379270101872'];
 const GA_ID = process.env.NEXT_PUBLIC_GA_ID || '';
 
 export default function Analytics() {
   return (
     <>
-      {/* ===== Meta Pixel (Facebook) ===== */}
+      {/* ===== Meta Pixel (Facebook) — chạy song song nhiều pixel ===== */}
       <Script id="meta-pixel" strategy="afterInteractive">
         {`
           !function(f,b,e,v,n,t,s)
@@ -26,19 +26,21 @@ export default function Analytics() {
           t.src=v;s=b.getElementsByTagName(e)[0];
           s.parentNode.insertBefore(t,s)}(window, document,'script',
           'https://connect.facebook.net/en_US/fbevents.js');
-          fbq('init', '${META_PIXEL_ID}');
+          ${META_PIXEL_IDS.map((id) => `fbq('init', '${id}');`).join('\n          ')}
           fbq('track', 'PageView');
         `}
       </Script>
-      <noscript>
-        <img
-          height="1"
-          width="1"
-          style={{ display: 'none' }}
-          src={`https://www.facebook.com/tr?id=${META_PIXEL_ID}&ev=PageView&noscript=1`}
-          alt=""
-        />
-      </noscript>
+      {META_PIXEL_IDS.map((id) => (
+        <noscript key={id}>
+          <img
+            height="1"
+            width="1"
+            style={{ display: 'none' }}
+            src={`https://www.facebook.com/tr?id=${id}&ev=PageView&noscript=1`}
+            alt=""
+          />
+        </noscript>
+      ))}
 
       {/* ===== Google Analytics (GA4) — chỉ chạy khi đã điền NEXT_PUBLIC_GA_ID ===== */}
       {GA_ID && (
