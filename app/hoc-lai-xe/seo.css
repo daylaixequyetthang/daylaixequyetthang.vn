@@ -1,0 +1,40 @@
+.seo-page{font-family:'Be Vietnam Pro',system-ui,sans-serif;color:#133252;line-height:1.7;background:#f7fbff;min-height:100vh}
+.seo-page *{box-sizing:border-box}
+.seo-wrap{width:min(1140px,calc(100% - 36px));margin:auto}
+.seo-head{padding:64px 0 56px;background:linear-gradient(112deg,#064c88,#0064b5);color:white}
+.seo-head h1{max-width:900px;font-size:clamp(32px,4.8vw,54px);line-height:1.16;letter-spacing:-.03em;margin:14px 0}
+.seo-head p{max-width:730px;font-size:17px;color:#e8f5ff}
+.seo-eyebrow{font-size:12px;font-weight:900;letter-spacing:.08em;color:#e5f1fe}
+.seo-back{color:#fff;font-size:14px;font-weight:700}
+.seo-section{padding:44px 0}
+.seo-section h2{font-size:clamp(23px,3vw,33px);color:#063f79;line-height:1.28;margin:0 0 16px}
+.seo-grid{display:grid;grid-template-columns:1.15fr .85fr;gap:24px;align-items:start}
+.seo-panel{background:#fff;border:1px solid #dfeaf4;border-radius:18px;padding:25px;box-shadow:0 5px 25px #084f7a0c}
+.seo-panel h2,.seo-panel h3{color:#06477e}
+.seo-panel p,.seo-panel li{font-size:15px;line-height:1.75}
+.seo-panel a{color:#065eaa;font-weight:700}
+.seo-chip-list{display:flex;gap:8px;flex-wrap:wrap;margin-top:17px}
+.seo-chip-list span,.seo-chip-list a{background:#eaf4fc;color:#084c86;border-radius:30px;padding:8px 14px;font-size:13px;text-decoration:none;font-weight:700}
+.seo-links{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin:20px 0}
+.seo-links a{display:flex;flex-direction:column;gap:5px;min-height:110px;background:#fff;border:1px solid #e0e9f2;border-radius:14px;padding:18px;color:#075c9b;text-decoration:none;font-weight:800}
+.seo-links a small{color:#566f82;font-weight:500}
+.seo-form{background:#fff;border:1px solid #bcd9ef;border-radius:20px;box-shadow:0 18px 50px #073e701b;padding:26px;display:flex;flex-direction:column;gap:9px}
+.seo-form h2{font-size:23px;margin:0;color:#07528e}
+.seo-form p{margin:0 0 8px;color:#566b7e;font-size:14px}
+.seo-form label{font-size:13px;font-weight:850}
+.seo-form input,.seo-form select{background:#fbfdff;color:#163753;width:100%;border:1px solid #bfcfda;border-radius:10px;padding:12px 14px;font:inherit;font-size:16px}
+.seo-form input:focus-visible,.seo-form select:focus-visible,.seo-page a:focus-visible,.seo-form button:focus-visible{outline:3px solid #ef7b31;outline-offset:2px}
+.seo-form button,.seo-primary{background:#e21d2a;color:white!important;border:0;border-radius:10px;padding:15px 20px;cursor:pointer;font:inherit;font-size:15px;font-weight:850;text-align:center;text-decoration:none}
+.seo-form button:disabled{opacity:.6;cursor:wait}
+.seo-form small{font-size:12px;color:#597185;line-height:1.7}
+.seo-form small a{color:#0064b5}
+.seo-alert{padding:10px;background:#fff1f2;border-radius:8px;color:#b32222!important}
+.seo-kicker{background:#eaf4fc;padding:14px 18px;border-left:4px solid #e21d2a;border-radius:8px}
+.seo-notice{padding:14px 18px;border-radius:10px;background:#fff9ec;color:#664d18;font-size:14px;margin:20px 0}
+.seo-inline{display:flex;gap:12px;flex-wrap:wrap}
+.seo-inline a{padding:11px 14px;background:#fff;border:1px solid #bbd4eb;border-radius:9px;color:#064d88;text-decoration:none;font-weight:750}
+.seo-bottom{background:#073d70;color:#fff;padding:28px 0;margin-top:48px}
+.seo-bottom a{color:#fff}
+@media(max-width:800px){.seo-grid{grid-template-columns:1fr}.seo-links{grid-template-columns:repeat(2,1fr)}.seo-head{padding:40px 0}.seo-panel{padding:19px}}
+@media(max-width:520px){.seo-wrap{width:calc(100% - 28px)}.seo-links{grid-template-columns:1fr}.seo-section{padding:28px 0}.seo-form{padding:19px}.seo-head p{font-size:15px}}
+@media(prefers-reduced-motion:reduce){.seo-page *{scroll-behavior:auto!important;animation:none!important}}
