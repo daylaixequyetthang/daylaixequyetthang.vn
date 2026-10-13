@@ -5,6 +5,7 @@ import '@/components/home.css';
 import './tintuc.css';
 
 export const metadata = {
+  alternates: { canonical: 'https://daylaixequyetthang.vn/tin-tuc' },
   title: 'Tin tức & kinh nghiệm lái xe | Lái Xe Quyết Thắng',
   description: 'Cập nhật tin tức, luật giao thông mới, kinh nghiệm thi và lái xe an toàn từ Trung tâm Đào tạo Lái Xe Quyết Thắng Bình Thuận.',
 };
