@@ -7,11 +7,11 @@ import { trackEvent } from '@/lib/track';
 const START = new Date('2026-10-10T07:00:00+07:00').getTime();
 const END = new Date('2026-11-20T16:45:00+07:00').getTime();
 const PRIZES = [
-  { name: 'GIẢI NHẤT', qty: 1, each: 3000000, icon: '🥇', cls: 'first' },
-  { name: 'GIẢI NHÌ', qty: 2, each: 2000000, icon: '🥈', cls: 'second' },
-  { name: 'GIẢI BA', qty: 3, each: 1000000, icon: '🥉', cls: 'third' },
-  { name: 'GIẢI TƯ', qty: 8, each: 500000, icon: '🎖️', cls: '' },
-  { name: 'KHUYẾN KHÍCH', qty: 30, each: 200000, icon: '🎁', cls: '' },
+  { name: 'GIẢI NHẤT', qty: 1, each: 3000000, cls: 'first' },
+  { name: 'GIẢI NHÌ', qty: 2, each: 2000000, cls: 'second' },
+  { name: 'GIẢI BA', qty: 3, each: 1000000, cls: 'third' },
+  { name: 'GIẢI TƯ', qty: 8, each: 500000, cls: '' },
+  { name: 'KHUYẾN KHÍCH', qty: 30, each: 200000, cls: '' },
 ];
 const COURSES = ['Hạng B – số tự động', 'Hạng B – số sàn', 'Hạng C1 – xe tải'];
 const OFFICES = ['Phan Thiết', 'La Gi', 'Bắc Bình', 'Cần được tư vấn'];
@@ -40,8 +40,8 @@ function useCountdown() {
 
 function PrizeCard({ prize }) {
   return <article className={'qt20-prize ' + (prize.cls || '')}>
-    <span className="qt20-prize-icon" aria-hidden="true">{prize.icon}</span>
-    <span className="qt20-prize-name">{String(prize.qty).padStart(2, '0')} {prize.name}</span>
+    <span className="qt20-prize-icon" aria-hidden="true">{String(prize.qty).padStart(2, '0')}</span>
+    <span className="qt20-prize-name">{prize.name}</span>
     <strong>{money(prize.each)}</strong>
     <small>Giá trị mỗi giải</small>
   </article>;
