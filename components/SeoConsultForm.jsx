@@ -7,6 +7,7 @@ export default function SeoConsultForm({ area = '', course = 'Hạng B', heading
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
   const [chosen, setChosen] = useState(course);
+  const [consent, setConsent] = useState(false);
   const [state, setState] = useState('idle');
   const [message, setMessage] = useState('');
   useEffect(() => { captureTracking(); }, []);
@@ -14,8 +15,8 @@ export default function SeoConsultForm({ area = '', course = 'Hạng B', heading
     e.preventDefault();
     if (state === 'sending') return;
     const clean = phone.replace(/[\s.\-]/g, '');
-    if (name.trim().length < 2 || !/^0\d{9}$/.test(clean)) {
-      setState('error'); setMessage('Vui lòng điền họ tên và số điện thoại Việt Nam hợp lệ.'); return;
+    if (name.trim().length < 2 || !/^0\d{9}$/.test(clean) || !consent) {
+      setState('error'); setMessage('Vui lòng nhập họ tên, số điện thoại hợp lệ và đồng ý để trung tâm liên hệ.'); return;
     }
     setState('sending'); setMessage('');
     try {
@@ -48,6 +49,7 @@ export default function SeoConsultForm({ area = '', course = 'Hạng B', heading
     <select id="seo-course" value={chosen} onChange={e=>setChosen(e.target.value)}>
       {['Hạng B','Hạng C1','Hạng A1','Hạng A','Nâng hạng C / D2','Chưa rõ – cần tư vấn'].map(v=><option value={v} key={v}>{v}</option>)}
     </select>
+    <label className="seo-consent"><input type="checkbox" required checked={consent} onChange={e=>setConsent(e.target.checked)} /><span>Tôi đồng ý để Quyết Thắng sử dụng thông tin đã cung cấp nhằm liên hệ tư vấn khóa học theo <a href="/chinh-sach-bao-mat">chính sách quyền riêng tư</a>.</span></label>
     {state==='error' && <p className="seo-alert" role="alert">{message}</p>}
     {state==='sending' && <p role="status">Đang gửi yêu cầu...</p>}
     <button type="submit" disabled={state==='sending'} aria-busy={state==='sending'}>{state==='sending'?'Đang gửi...':'Gửi yêu cầu tư vấn'}</button>
