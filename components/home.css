@@ -218,3 +218,12 @@
 .dual-card h3{font-size:1.5rem;font-weight:800;margin-bottom:10px}
 .dual-card p{color:rgba(255,255,255,.92);margin-bottom:22px;max-width:420px}
 @media(max-width:720px){.dual-grid{grid-template-columns:1fr}}
+
+
+/* Responsive navigation fix: display hamburger whenever desktop navigation is hidden. */
+@media(max-width:1180px){
+  .hdr .nav,.hdr .hphone{display:none}
+  .hdr .burger{display:flex}
+}
+/* Helpful controls should be reachable via keyboard */
+.hdr a:focus-visible,.hdr button:focus-visible{outline:3px solid #e21d2a;outline-offset:3px}
