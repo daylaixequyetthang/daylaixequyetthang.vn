@@ -18,7 +18,7 @@ export default function SiteHeader({ home = false }) {
         <nav className="nav">
           <a href={h('why')}>Vì sao chọn</a>
           <a href={h('courses')}>Học phí</a>
-          <a href="/tra-cuu">Tra cứu lịch</a>
+          <a href="/khoa-hoc">Khóa học</a><a href="/hoc-lai-xe">Khu vực</a><a href="/tra-cuu">Tra cứu lịch</a>
           <a href="/thi-thu">Thi thử 600 câu</a>
           <a href="/tin-tuc">Tin tức</a>
           <a href={h('lien-he')}>Liên hệ</a>
