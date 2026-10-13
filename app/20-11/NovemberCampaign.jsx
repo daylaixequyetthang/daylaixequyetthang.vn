@@ -130,11 +130,19 @@ export default function NovemberCampaign() {
             <div className="qt20-actions"><a className="qt20-btn qt20-btn-red" href="#dang-ky">Nhận tư vấn chương trình <span aria-hidden="true">→</span></a><a className="qt20-btn qt20-btn-white" href="#giai-thuong">Xem giải thưởng</a></div>
             <p className="qt20-dates">07:00 ngày 10/10 – 16:45 ngày 20/11/2026 (GMT+7)</p>
           </div>
-          <figure className="qt20-art qt20-art-photo">
-            <img src="/anh/student-2.jpg" alt="Học viên được tư vấn và hoàn thiện hồ sơ tại văn phòng Quyết Thắng" width="800" height="800" fetchPriority="high" decoding="async" />
-            <figcaption className="qt20-photo-caption">Hình ảnh thực tế tại Quyết Thắng</figcaption>
-            <div className="qt20-photo-ticket" aria-hidden="true"><span>44 GIẢI THƯỞNG</span><strong>20 TRIỆU ĐỒNG</strong><small>Tổng giá trị chương trình</small></div>
-          </figure>
+          <div className="qt20-art" aria-hidden="true">
+            <div className="qt20-art-ring" />
+            <div className="qt20-ticket qt20-ticket-back"><b>TRI ÂN 20/11</b><span>QUYẾT THẮNG</span></div>
+            <div className="qt20-ticket qt20-ticket-main">
+              <div className="qt20-ticket-overline">HỌC LÁI XE • CƠ HỘI TRÚNG THƯỞNG</div>
+              <div className="qt20-gift"><span>🎁</span></div>
+              <strong>44</strong><b>GIẢI MAY MẮN</b>
+              <div className="qt20-ticket-line" />
+              <small>01 mã dự thưởng cho mỗi học viên đủ điều kiện</small>
+            </div>
+            <div className="qt20-float qt20-float-one"><span>🏆 01 GIẢI NHẤT</span><b>3.000.000đ</b></div>
+            <div className="qt20-float qt20-float-two">✦ Đăng ký học B / C1 ✦</div>
+          </div>
         </div>
       </section>
 
