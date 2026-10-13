@@ -8,7 +8,7 @@ export const dynamicParams=false;
 export function generateStaticParams(){return COURSES_SEO.map(x=>({slug:x.slug}));}
 export function generateMetadata({params}){
  const c=findCourse(params.slug);if(!c)return {};
- return {title:c.title+' | Quyết Thắng',description:c.intro+' Đăng ký tư vấn online, hướng dẫn hồ sơ và nơi đào tạo thực tế.',alternates:{canonical:BASE+'/khoa-hoc/'+c.slug},
+ return {title:c.title,description:c.intro+' Đăng ký tư vấn online, hướng dẫn hồ sơ và nơi đào tạo thực tế.',alternates:{canonical:BASE+'/khoa-hoc/'+c.slug},
  openGraph:{url:BASE+'/khoa-hoc/'+c.slug,title:c.title+' – Quyết Thắng'}};
 }
 export default function CourseDetail({params}){
