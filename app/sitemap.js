@@ -4,12 +4,12 @@ const BASE = 'https://daylaixequyetthang.vn';
 
 export default function sitemap() {
   const now = new Date();
-  const routes = ['', '/thi-thu', '/tra-cuu', '/dang-ky', '/cap-nhat-quy-dinh', '/tin-tuc', '/chinh-sach-bao-mat'];
+  const routes = ['', '/thi-thu', '/tra-cuu', '/dang-ky', '/cap-nhat-quy-dinh', '/tin-tuc', '/chinh-sach-bao-mat', '/20-11'];
   const staticUrls = routes.map((r) => ({
     url: `${BASE}${r}`,
     lastModified: now,
     changeFrequency: r === '/cap-nhat-quy-dinh' ? 'weekly' : 'monthly',
-    priority: r === '' ? 1 : r === '/cap-nhat-quy-dinh' ? 0.9 : 0.8,
+    priority: r === '' ? 1 : r === '/20-11' ? 0.9 : r === '/cap-nhat-quy-dinh' ? 0.9 : 0.8,
   }));
   const postUrls = POSTS.map((p) => ({
     url: `${BASE}/tin-tuc/${p.slug}`,
