@@ -1,7 +1,7 @@
 import './capnhat.css';
 
 export const metadata = {
-  title: 'Cập nhật quy định thi GPLX mới nhất 2025 - 2027 | Bộ đề lý thuyết Bộ Công an | Lái Xe Quyết Thắng',
+  title: 'Quy Định Thi GPLX 2026 – Bộ 600 Câu Và Điểm Cần Biết',
   description:
     'Cập nhật quy định thi sát hạch giấy phép lái xe (GPLX) mới nhất của Bộ Công an: bộ 600 câu hỏi lý thuyết áp dụng từ 01/6/2025 và thông tin dự kiến điều chỉnh bộ đề lý thuyết (50 câu hỏi) trong thời gian tới. Trung tâm Lái Xe Quyết Thắng Bình Thuận cập nhật liên tục.',
   keywords:
@@ -19,7 +19,7 @@ export const metadata = {
 export const revalidate = 3600;
 
 export default function CapNhatQuyDinh() {
-  const updated = '2025';
+  const updated = '2026';
   const faqSchema = {
     '@context': 'https://schema.org',
     '@type': 'FAQPage',
