@@ -1,4 +1,5 @@
 import HomeClient from '@/components/HomeClient';
+export const metadata = { alternates: { canonical: 'https://daylaixequyetthang.vn/' } };
 
 const courseSchema = {
   '@context': 'https://schema.org',
