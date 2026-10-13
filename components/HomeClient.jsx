@@ -3,6 +3,7 @@ import './home.css';
 import { useState } from 'react';
 import Reveal from './Reveal';
 import SiteHeader from './SiteHeader';
+import NovemberBanner from './NovemberBanner';
 import LeadForm from './LeadForm';
 import LuckyWheel from './LuckyWheel';
 import ChatBot from './ChatBot';
@@ -34,6 +35,9 @@ export default function HomeClient() {
           {[...banners, ...banners].map((b, i) => <span key={i}>{b}</span>)}
         </div>
       </div>
+
+      {/* 20/11 campaign banner — automatically hidden after the event */}
+      <NovemberBanner />
 
       {/* HERO */}
       <section className="hero" id="top">
