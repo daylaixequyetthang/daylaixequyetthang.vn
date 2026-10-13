@@ -26,9 +26,18 @@ async function getPost(slug) {
 export async function generateMetadata({ params }) {
   const post = await getPost(params.slug);
   if (!post) return { title: 'Không tìm thấy bài viết' };
+  const canonical = 'https://daylaixequyetthang.vn/tin-tuc/' + post.slug;
+  const title = post.meta_title || post.title;
+  const description = post.meta_description || post.excerpt;
   return {
-    title: post.meta_title || post.title,
-    description: post.meta_description || post.excerpt,
+    title: { absolute: title.includes('Quyết Thắng') ? title : title + ' | Quyết Thắng' },
+    description,
+    alternates: { canonical },
+    openGraph: {
+      title, description, url: canonical, type: 'article',
+      ...(post.published_at ? { publishedTime: post.published_at } : {}),
+      ...(post.cover_url ? { images: [{ url: post.cover_url, alt: post.title }] } : {}),
+    }
   };
 }
 
@@ -36,8 +45,21 @@ export default async function PostPage({ params }) {
   const post = await getPost(params.slug);
   if (!post) notFound();
 
+  const canonical = 'https://daylaixequyetthang.vn/tin-tuc/' + post.slug;
+  const articleSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'BlogPosting',
+    headline: post.title,
+    description: post.excerpt,
+    mainEntityOfPage: canonical,
+    author: { '@type': 'Organization', name: post.author_name || 'Trung Tâm GDNN Quyết Thắng' },
+    publisher: { '@type': 'Organization', name: 'Trung Tâm GDNN Quyết Thắng', logo: { '@type': 'ImageObject', url: 'https://daylaixequyetthang.vn/logo.png' } },
+    ...(post.published_at ? { datePublished: post.published_at } : {}),
+    ...(post.cover_url ? { image: post.cover_url } : {})
+  };
   return (
     <div className="tn">
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(articleSchema).replace(/</g, '\\u003c') }} />
       <header className="tn-hdr">
         <div className="wrap tn-hdr-in">
           <a href="/tin-tuc" className="tn-back">← Tất cả bài viết</a>

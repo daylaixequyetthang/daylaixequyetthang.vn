@@ -45,8 +45,8 @@ export default function HomeClient() {
         <div className="wrap hero-grid">
           <div>
             <span className="eyebrow on-dark">18 năm · 35.000+ học viên</span>
-            <h1>Học lái xe A1, A, B, C1, C tại Bình Thuận cùng <span className="grad-text-blue">Quyết Thắng</span></h1>
-            <p className="lead">Học phí trọn gói, cam kết không phát sinh — đã gồm xăng, xe, giáo viên, sân bãi, đường trường DAT và lệ phí thi tốt nghiệp.</p>
+            <h1>Học lái xe B, C1, A1, A tại khu vực Bình Thuận cùng <span className="grad-text-blue">Quyết Thắng</span></h1>
+            <p className="lead">Tư vấn khóa học, học phí và lịch đào tạo rõ ràng. Đăng ký online từ khu vực Bình Thuận, Đồng Nai, TP.HCM; xác nhận nơi học thực tế trước khi ghi danh.</p>
             <div className="hero-cta">
               <a href="#dangky" className="btn btn-light">Nhận tư vấn & báo giá</a>
               <a href={`tel:${PHONE}`} className="btn btn-ghost">📞 Gọi {PHONE_DISPLAY}</a>
@@ -66,7 +66,7 @@ export default function HomeClient() {
         <div className="wrap">
           <Reveal className="sec-head">
             <span className="eyebrow">Vì sao chọn Quyết Thắng</span>
-            <h2>Đào tạo bài bản, học phí minh bạch, đậu là có bằng</h2>
+            <h2>Đào tạo bài bản, học phí minh bạch, hỗ trợ học viên suốt khóa</h2>
             <p>Hơn 18 năm tiên phong đào tạo lái xe tại Bình Thuận, là trung tâm đào tạo lái xe uy tín được nhiều học viên tin tưởng.</p>
           </Reveal>
           <div className="feat-grid">
@@ -115,6 +115,21 @@ export default function HomeClient() {
         </div>
       </section>
 
+      {/* REGIONAL SEO: navigable, useful destination hubs */}
+      <section className="sec" id="khu-vuc">
+        <div className="wrap">
+          <div className="sec-head">
+            <span className="eyebrow">Khu vực tư vấn</span>
+            <h2>Đăng ký học lái xe online theo địa phương</h2>
+            <p>Văn phòng tại Phan Thiết, La Gi, Bắc Bình. Tiếp nhận tư vấn từ các địa phương Bình Thuận, Đồng Nai và TP.HCM; cần xác nhận nơi học thực tế trước khi ghi danh.</p>
+          </div>
+          <div className="dual-grid">
+            <div className="dual-card"><h3>Khóa học lái xe B, C1, A1, A</h3><p>Xem phạm vi hạng bằng, hướng dẫn hồ sơ và nhận tư vấn học phí.</p><a className="btn btn-blue" href="/khoa-hoc">Xem các khóa học</a></div>
+            <div className="dual-card"><h3>Phan Thiết · La Gi · Bắc Bình và các khu vực khác</h3><p>Chọn địa phương để xem điểm tiếp nhận thực tế và đăng ký tư vấn online.</p><a className="btn btn-blue" href="/hoc-lai-xe">Xem các khu vực hỗ trợ</a></div>
+          </div>
+        </div>
+      </section>
+
       {/* PROCESS */}
       <section className="sec" id="process">
         <div className="wrap">
@@ -140,7 +155,7 @@ export default function HomeClient() {
           <Reveal className="offer">
             <div>
               <h2>Ưu đãi đăng ký khóa mới</h2>
-              <p>Đăng ký hạng B hoặc C1 thời điểm này nhận nhiều ưu đãi hấp dẫn. Học trước trả sau — chỉ 2.000.000đ giữ chỗ. Quay số ngay để nhận thêm ưu đãi học phí!</p>
+              <p>Liên hệ để cập nhật chính sách học phí và phương án thanh toán của khóa B hoặc C1; đăng ký tư vấn online để xác nhận điều kiện phù hợp.</p>
               <div className="tags"><span>🎓 Lấy bằng trước Tết</span><span>💳 Học trước trả sau</span><span>🎡 Quay số trúng ưu đãi</span></div>
             </div>
             <button className="btn btn-light" onClick={() => setWheel(true)}>🎡 Quay số nhận ưu đãi</button>
@@ -301,18 +316,18 @@ export default function HomeClient() {
               </div>
             </div>
             <div><h4>Khóa học</h4><ul>
-              <li><a href="#courses">Hạng B – ô tô con</a></li>
-              <li><a href="#courses">Hạng C1 – xe tải nhỏ</a></li>
-              <li><a href="#courses">Hạng C – xe tải</a></li>
-              <li><a href="#courses">Hạng A1, A – mô tô</a></li>
-              <li><a href="#courses">Nâng hạng C, D2</a></li>
+              <li><a href="/khoa-hoc/hang-b">Hạng B – ô tô con</a></li>
+              <li><a href="/khoa-hoc/hang-c1">Hạng C1 – xe tải</a></li>
+              <li><a href="/khoa-hoc/nang-hang">Nâng hạng C – xe tải</a></li>
+              <li><a href="/khoa-hoc/hang-a1">Hạng A1, A – mô tô</a></li>
+              <li><a href="/khoa-hoc/nang-hang">Nâng hạng C, D2</a></li>
             </ul></div>
             <div><h4>Liên kết</h4><ul>
               <li><a href="/tra-cuu">Tra cứu lịch & tiến độ</a></li>
               <li><a href="/dang-ky">Đăng ký & đặt cọc</a></li>
               <li><a href="/thi-thu">Thi thử 600 câu</a></li>
               <li><a href="/cap-nhat-quy-dinh">Cập nhật quy định thi GPLX</a></li>
-              <li><a href="/tin-tuc">Tin tức & kinh nghiệm</a></li>
+              <li><a href="/tin-tuc">Tin tức & kinh nghiệm</a></li><li><a href="/hoc-lai-xe">Các khu vực tư vấn</a></li>
               <li><a href="#faq">Câu hỏi thường gặp</a></li>
             </ul></div>
             <div><h4>Liên hệ</h4>
@@ -335,7 +350,7 @@ export default function HomeClient() {
 
       {/* STICKY + FLOAT + WHEEL */}
       <div className="sticky-cta">
-        <a href="/uu-dai-he" className="c1">🎁 Ưu đãi hè</a>
+        <a href="/khoa-hoc" className="c1">Khóa học</a>
         <a href="/dang-ky" className="c2">Đăng Ký Ngay</a>
       </div>
       <button className="float-wheel" onClick={() => setWheel(true)} aria-label="Quay số trúng thưởng">🎡</button>

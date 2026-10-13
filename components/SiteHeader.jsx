@@ -18,7 +18,7 @@ export default function SiteHeader({ home = false }) {
         <nav className="nav">
           <a href={h('why')}>Vì sao chọn</a>
           <a href={h('courses')}>Học phí</a>
-          <a href="/tra-cuu">Tra cứu lịch</a>
+          <a href="/khoa-hoc">Khóa học</a><a href="/hoc-lai-xe">Khu vực</a><a href="/tra-cuu">Tra cứu lịch</a>
           <a href="/thi-thu">Thi thử 600 câu</a>
           <a href="/tin-tuc">Tin tức</a>
           <a href={h('lien-he')}>Liên hệ</a>
@@ -26,10 +26,10 @@ export default function SiteHeader({ home = false }) {
         <div className="hdr-cta">
           <a href={`tel:${PHONE}`} className="hphone">{PHONE_DISPLAY}<small>Hotline / Zalo</small></a>
           <a href="/dang-ky" className="btn btn-blue" style={{ padding: '11px 20px' }}>Đăng ký</a>
-          <button className="burger" aria-label="Menu" onClick={() => setMenu((m) => !m)}><span /><span /><span /></button>
+          <button className="burger" aria-label="Mở hoặc đóng menu" aria-controls="primary-mobile-nav" aria-expanded={menu} onClick={() => setMenu((m) => !m)}><span /><span /><span /></button>
         </div>
       </div>
-      <nav className={`mmenu ${menu ? 'open' : ''}`} onClick={() => setMenu(false)}>
+      <nav id="primary-mobile-nav" className={`mmenu ${menu ? 'open' : ''}`} onClick={() => setMenu(false)}>
         <a href={h('why')}>Vì sao chọn</a>
         <a href={h('courses')}>Học phí</a>
         <a href="/tra-cuu">Tra cứu lịch</a>

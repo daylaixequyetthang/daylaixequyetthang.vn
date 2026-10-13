@@ -5,8 +5,8 @@ import { trackEvent } from '@/lib/track';
 const COURSES = [
   { v: 'Hạng B – số tự động', deposit: 2000000 },
   { v: 'Hạng B – số cơ khí (số sàn)', deposit: 2000000 },
-  { v: 'Hạng C1 – xe tải dưới 3,5 tấn', deposit: 3000000 },
-  { v: 'Hạng C – xe tải trên 3,5 tấn', deposit: 3000000 },
+  { v: 'Hạng C1 – xe tải trên 3,5 đến 7,5 tấn', deposit: 3000000 },
+  { v: 'Nâng hạng C – xe tải trên 7,5 tấn', deposit: 3000000 },
   { v: 'Hạng A1 – mô tô', deposit: 500000 },
   { v: 'Hạng A – mô tô phân khối lớn', deposit: 1000000 },
   { v: 'Nâng hạng (lên C / D2)', deposit: 2000000 },
@@ -61,8 +61,8 @@ export default function DangKyClient() {
           <div className="dk-grid">
             <div className="dk-form">
               <span className="eyebrow">Đăng ký giữ chỗ</span>
-              <h1>Đăng ký & đặt cọc online</h1>
-              <p className="dk-sub">Điền thông tin và đặt cọc giữ chỗ qua mã QR. Cọc được trừ vào học phí khi nhập học.</p>
+              <h1>Đăng ký & đặt cọc học lái xe online</h1>
+              <p className="dk-sub">Điền thông tin và đặt cọc giữ chỗ qua mã QR. Cọc được trừ vào học phí theo xác nhận của trung tâm. Điểm đào tạo và lịch thực hành cần được tư vấn trước khi hoàn tất.</p>
 
               <label>Họ và tên *</label>
               <input value={f.full_name} onChange={up('full_name')} placeholder="Nguyễn Văn A" />

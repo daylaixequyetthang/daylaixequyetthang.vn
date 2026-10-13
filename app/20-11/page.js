@@ -4,7 +4,7 @@ import NovemberCampaign from './NovemberCampaign';
 const SITE = 'https://daylaixequyetthang.vn';
 
 export const metadata = {
-  title: '20/11/2026 – Học lái xe B, C1, cơ hội trúng 20 triệu đồng | Quyết Thắng',
+  title: '20/11/2026 – Học lái xe B, C1, cơ hội trúng 20 triệu đồng',
   description: 'Chương trình tri ân 20/11/2026 tại Trung Tâm GDNN Quyết Thắng: 44 giải thưởng với tổng giá trị 20 triệu đồng. Dành cho học viên hạng B, C1 đáp ứng đủ điều kiện.',
   alternates: { canonical: SITE + '/20-11' },
   openGraph: {

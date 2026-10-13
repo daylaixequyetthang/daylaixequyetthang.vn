@@ -2,6 +2,7 @@ import './uudai.css';
 import VoucherClient from './VoucherClient';
 
 export const metadata = {
+  alternates: { canonical: 'https://daylaixequyetthang.vn/uu-dai-he' },
   title: 'Học Lái Xe Tặng Du Lịch Hè — Voucher Nghỉ Dưỡng Mũi Né | Quyết Thắng',
   description:
     'Đăng ký học lái xe tại Quyết Thắng nhận ngay voucher nghỉ dưỡng 2 ngày 1 đêm tại Resort Mũi Né cho 2 người: hồ bơi, ăn sáng, sát biển. Ưu đãi có hạn!',

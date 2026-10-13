@@ -1,6 +1,7 @@
 import './privacy.css';
 
 export const metadata = {
+  alternates: { canonical: 'https://daylaixequyetthang.vn/chinh-sach-bao-mat' },
   title: 'Chính sách quyền riêng tư',
   description:
     'Chính sách quyền riêng tư của Trung tâm Đào tạo Lái Xe Quyết Thắng: cách chúng tôi thu thập, sử dụng và bảo vệ thông tin của bạn, bao gồm cookie, Meta Pixel và Google Analytics.',

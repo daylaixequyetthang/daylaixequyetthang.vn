@@ -6,8 +6,8 @@ import { captureTracking, getTracking } from '@/lib/tracking';
 const COURSE_OPTIONS = [
   'Hạng B – số tự động',
   'Hạng B – số cơ khí (số sàn)',
-  'Hạng C1 – xe tải dưới 3,5 tấn',
-  'Hạng C – xe tải trên 3,5 tấn',
+  'Hạng C1 – xe tải trên 3,5 đến 7,5 tấn',
+  'Nâng hạng C – xe tải trên 7,5 tấn',
   'Hạng A1 – mô tô',
   'Hạng A – mô tô phân khối lớn',
   'Nâng hạng (lên C / D2)',
@@ -38,12 +38,12 @@ export default function LeadForm({ onSpin }) {
         body: JSON.stringify({ name, phone: p, course, need: course, source: 'form', tracking: getTracking() }),
       });
       const d = await r.json();
-      if (d.ok) {
+      if (d.ok && (d.saved || d.notified?.telegram || d.notified?.zalo)) {
         trackEvent('Lead', { content_name: course || 'Tư vấn khóa học' });
         setStatus('ok'); setMsg('Cảm ơn bạn! Trung tâm sẽ gọi lại trong ít phút.');
         setName(''); setPhone('');
       } else {
-        setStatus('err'); setMsg(d.error || 'Có lỗi, vui lòng thử lại.');
+        setStatus('err'); setMsg(d.error || 'Chưa xác nhận được yêu cầu. Vui lòng gọi 084 875 1111.');
       }
     } catch {
       setStatus('err'); setMsg('Không gửi được, vui lòng gọi 084 875 1111.');
@@ -56,12 +56,12 @@ export default function LeadForm({ onSpin }) {
       <h3>Đăng ký giữ chỗ khóa học</h3>
       <p className="lf-sub">Để lại thông tin, trung tâm gọi lại tư vấn lịch học & học phí trong ít phút.</p>
 
-      <label>Họ và tên</label>
-      <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Nguyễn Văn A" />
-      <label>Số điện thoại / Zalo</label>
-      <input value={phone} onChange={(e) => setPhone(e.target.value)} type="tel" required placeholder="09xx xxx xxx" />
-      <label>Khóa muốn học</label>
-      <select value={course} onChange={(e) => setCourse(e.target.value)}>
+      <label htmlFor="home-lead-name">Họ và tên</label>
+      <input id="home-lead-name" required minLength={2} autoComplete="name" value={name} onChange={(e) => setName(e.target.value)} placeholder="Nguyễn Văn A" />
+      <label htmlFor="home-lead-phone">Số điện thoại / Zalo</label>
+      <input id="home-lead-phone" autoComplete="tel-national" inputMode="tel" value={phone} onChange={(e) => setPhone(e.target.value)} type="tel" required placeholder="09xx xxx xxx" />
+      <label htmlFor="home-lead-course">Khóa muốn học</label>
+      <select id="home-lead-course" value={course} onChange={(e) => setCourse(e.target.value)}>
         {COURSE_OPTIONS.map((c) => <option key={c}>{c}</option>)}
       </select>
 
@@ -69,7 +69,7 @@ export default function LeadForm({ onSpin }) {
         {status === 'sending' ? 'Đang gửi...' : 'Gửi đăng ký ngay'}
       </button>
 
-      {msg && <p className={`lf-msg ${status}`}>{msg}</p>}
+      {msg && <p role={status === "err" ? "alert" : "status"} className={`lf-msg ${status}`}>{msg}</p>}
 
       <button type="button" className="lf-spin" onClick={onSpin}>🎁 QUAY SỐ TRÚNG ƯU ĐÃI HỌC PHÍ</button>
       <p className="lf-fine">Hoặc Zalo trực tiếp: <b>084 875 1111</b> · Tư vấn không mất phí</p>
