@@ -17,7 +17,7 @@ export default async function sitemap() {
  try {
   if (process.env.NEXT_PUBLIC_SUPABASE_URL) {
    const { data, error }=await supabasePublic().from('posts')
-     .select('slug,published_at,updated_at').eq('status','published')
+     .select('slug,published_at').eq('status','published')
      .order('published_at',{ascending:false}).limit(1000);
    if (error) throw error;
    for (const p of data || []) if(p.slug && /^[a-z0-9-]+$/.test(p.slug)) {
