@@ -5,12 +5,12 @@ import Script from 'next/script';
 // MÃ THEO DÕI: Meta Pixel (Facebook) + Google Analytics (GA4)
 // ============================================================
 // - 2 Meta Pixel ID đang chạy song song bên dưới (cả 2 cùng nhận dữ liệu mỗi lượt xem trang).
-// - Google Analytics: điền mã đo lường GA4 (dạng G-XXXXXXX) vào biến môi trường
-//   NEXT_PUBLIC_GA_ID trong file .env (hoặc trong phần Environment Variables của Vercel).
-//   Nếu chưa điền, GA tự bỏ qua, không ảnh hưởng web.
+// - GA4 chính thức cho daylaixequyetthang.vn: G-5M3MCW890B.
+// - Sử dụng gtag.js hiện có của Next.js, không cài trùng đoạn script thủ công.
+// - Không phụ thuộc biến NEXT_PUBLIC_GA_ID của Vercel.
 
 const META_PIXEL_IDS = ['1311091366692533', '1089379270101872'];
-const GA_ID = process.env.NEXT_PUBLIC_GA_ID || '';
+const GA_ID = 'G-5M3MCW890B';
 
 export default function Analytics() {
   return (
@@ -42,7 +42,7 @@ export default function Analytics() {
         </noscript>
       ))}
 
-      {/* ===== Google Analytics (GA4) — chỉ chạy khi đã điền NEXT_PUBLIC_GA_ID ===== */}
+      {/* ===== Google Analytics 4 — 1 tag dùng trên toàn bộ website ===== */}
       {GA_ID && (
         <>
           <Script src={`https://www.googletagmanager.com/gtag/js?id=${GA_ID}`} strategy="afterInteractive" />
