@@ -278,3 +278,18 @@
   .qt20-top-cta{padding:9px 10px}
   .qt20-photo-ticket strong{font-size:23px}
 }
+
+.qt20 .qt20-prize-icon{
+  display:grid;place-items:center;
+  width:48px;height:48px;
+  border-radius:12px;
+  background:#e5f2ff;color:#0064b5;
+  font-size:20px;font-variant-numeric:tabular-nums;
+  font-weight:900;line-height:1;
+}
+.qt20 .qt20-prize.first .qt20-prize-icon{
+  background:#fff;color:#0064b5;
+}
+@media(max-width:600px){
+  .qt20 .qt20-prize-icon{width:42px;height:42px;font-size:18px}
+}
