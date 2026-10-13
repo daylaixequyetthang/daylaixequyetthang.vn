@@ -14,9 +14,9 @@ export const metadata = {
     siteName: 'Trung Tâm GDNN Quyết Thắng',
     locale: 'vi_VN',
     type: 'website',
-    images: [{ url: '/20-11/opengraph-image', width: 1200, height: 630, alt: 'Quyết Thắng 20/11 – 44 giải thưởng, tổng giá trị 20 triệu đồng' }],
+    images: [{ url: 'https://daylaixequyetthang.vn/20-11/facebook-cover-2026', secureUrl: 'https://daylaixequyetthang.vn/20-11/facebook-cover-2026', width: 1200, height: 630, type: 'image/png', alt: 'Quyết Thắng 20/11 – 44 giải thưởng, tổng giá trị 20 triệu đồng' }],
   },
-  twitter: { card: 'summary_large_image', title: 'Quyết Thắng 20/11 – Tổng giải thưởng 20 triệu đồng', images: ['/20-11/opengraph-image'] },
+  twitter: { card: 'summary_large_image', title: 'Quyết Thắng 20/11 – Tổng giải thưởng 20 triệu đồng', images: ['https://daylaixequyetthang.vn/20-11/facebook-cover-2026'] },
   robots: { index: true, follow: true },
 };
 
