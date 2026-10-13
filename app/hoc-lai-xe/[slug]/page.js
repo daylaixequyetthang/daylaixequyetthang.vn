@@ -34,7 +34,7 @@ export default function RegionPage({params}){
  }:null;
  return <main className="seo-page">
   {schema && <script type="application/ld+json" dangerouslySetInnerHTML={{__html:JSON.stringify(schema)}} />}
-  <div className="seo-head"><div className="seo-wrap"><Link className="seo-back" href="/hoc-lai-xe">← Các khu vực hỗ trợ</Link><p className="seo-eyebrow">{office?'VĂN PHÒNG TIẾP NHẬN THỰC TẾ':'TIẾP NHẬN TƯ VẤN ONLINE'}</p><h1>Học lái xe tại {r.name} – tư vấn B, C1, A1 online</h1><p>{r.intro}</p></div></div>
+  <div className="seo-head"><div className="seo-wrap"><Link className="seo-back" href="/hoc-lai-xe">← Các khu vực hỗ trợ</Link><p className="seo-eyebrow">{office?'VĂN PHÒNG TIẾP NHẬN THỰC TẾ':'TIẾP NHẬN TƯ VẤN ONLINE'}</p>{office ? <h1>Học lái xe tại {r.name} – tư vấn B, C1, A1 online</h1> : <h1>Đăng ký tư vấn học lái xe online từ {r.name}</h1>}<p>{r.intro}</p></div></div>
   <div className="seo-wrap">
    <section className="seo-section seo-grid">
     <div>
