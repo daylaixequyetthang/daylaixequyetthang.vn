@@ -38,3 +38,7 @@
 @media(max-width:800px){.seo-grid{grid-template-columns:1fr}.seo-links{grid-template-columns:repeat(2,1fr)}.seo-head{padding:40px 0}.seo-panel{padding:19px}}
 @media(max-width:520px){.seo-wrap{width:calc(100% - 28px)}.seo-links{grid-template-columns:1fr}.seo-section{padding:28px 0}.seo-form{padding:19px}.seo-head p{font-size:15px}}
 @media(prefers-reduced-motion:reduce){.seo-page *{scroll-behavior:auto!important;animation:none!important}}
+
+.seo-form .seo-consent{display:flex;align-items:flex-start;gap:10px;margin:9px 0;line-height:1.55;font-size:13px;font-weight:500}
+.seo-form .seo-consent input[type="checkbox"]{width:18px;height:18px;flex:0 0 18px;margin-top:3px;accent-color:#0064b5;padding:0}
+.seo-form .seo-consent a{color:#0064b5;text-decoration:underline}
