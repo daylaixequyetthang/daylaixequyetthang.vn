@@ -6,14 +6,13 @@ const SITE = 'https://daylaixequyetthang.vn';
 export const metadata = {
   metadataBase: new URL(SITE),
   title: {
-    default: 'Trung Tâm Đào Tạo Lái Xe Quyết Thắng | Học lái xe A1, A, B, C1, C tại Bình Thuận',
-    template: '%s | Lái Xe Quyết Thắng',
+    default: 'Học Lái Xe B, C1, A1 Tại Bình Thuận | Quyết Thắng',
+    template: '%s | Quyết Thắng',
   },
   description:
-    '18 năm đào tạo lái xe mô tô, ô tô, xe tải tại Bình Thuận. Học phí trọn gói, cam kết không phát sinh. Hạng B 15.500.000đ, C1 19.000.000đ. Hotline/Zalo: 084 875 1111.',
+    'Tư vấn học lái xe B, C1, A1, A tại Phan Thiết, La Gi, Bắc Bình. Đăng ký online từ Bình Thuận, Đồng Nai, TP.HCM. Hotline: 084 875 1111.',
   keywords: 'học lái xe Bình Thuận, lái xe Phan Thiết, học lái xe ô tô, bằng B, bằng C1, bằng C, bằng A1, thi GPLX, 600 câu lý thuyết, Quyết Thắng, daylaixequyetthang',
   authors: [{ name: 'Trung tâm Đào tạo Lái Xe Quyết Thắng' }],
-  alternates: { canonical: SITE },
   openGraph: {
     title: 'Lái Xe Quyết Thắng — Học lái xe tại Bình Thuận',
     description: 'Học phí trọn gói, tỷ lệ đậu cao, khai giảng hàng tháng. Thi thử 600 câu miễn phí.',
@@ -32,21 +31,21 @@ export const metadata = {
   robots: { index: true, follow: true, googleBot: { index: true, follow: true } },
 };
 
-// Schema dữ liệu có cấu trúc — giúp Google hiểu đây là trường dạy lái xe ở Bình Thuận.
+// Global brand entity; physical branches are marked up only on their own verified pages.
 const orgSchema = {
   '@context': 'https://schema.org',
-  '@type': 'DrivingSchool',
-  name: 'Trung tâm Đào tạo Lái Xe Quyết Thắng',
-  description: 'Trung tâm đào tạo và sát hạch lái xe mô tô, ô tô, xe tải tại Bình Thuận. Hơn 18 năm kinh nghiệm.',
+  '@type': 'Organization',
+  '@id': SITE + '/#organization',
+  name: 'Trung Tâm GDNN Quyết Thắng',
   url: SITE,
+  logo: SITE + '/logo.png',
   telephone: '+84848751111',
-  areaServed: 'Bình Thuận',
-  address: [
-    { '@type': 'PostalAddress', streetAddress: '291 Trần Hưng Đạo', addressLocality: 'Phan Thiết', addressRegion: 'Bình Thuận', addressCountry: 'VN' },
-    { '@type': 'PostalAddress', streetAddress: '280 Thống Nhất', addressLocality: 'La Gi', addressRegion: 'Bình Thuận', addressCountry: 'VN' },
-    { '@type': 'PostalAddress', streetAddress: 'QL1A, Phan Hiệp', addressLocality: 'Bắc Bình', addressRegion: 'Bình Thuận', addressCountry: 'VN' },
-  ],
   sameAs: ['https://facebook.com/daylaixequyetthangbt'],
+  areaServed: [
+    { '@type': 'Place', name: 'Khu vực Bình Thuận' },
+    { '@type': 'AdministrativeArea', name: 'Đồng Nai' },
+    { '@type': 'AdministrativeArea', name: 'TP. Hồ Chí Minh' }
+  ]
 };
 
 export default function RootLayout({ children }) {
