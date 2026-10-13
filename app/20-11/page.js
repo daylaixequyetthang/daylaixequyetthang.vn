@@ -14,9 +14,10 @@ export const metadata = {
     siteName: 'Trung Tâm GDNN Quyết Thắng',
     locale: 'vi_VN',
     type: 'website',
-    images: [{ url: '/og-image.png', width: 1200, height: 630, alt: 'Trung Tâm GDNN Quyết Thắng' }],
+    images: [{ url: '/20-11/opengraph-image', width: 1200, height: 630, alt: 'Quyết Thắng 20/11 – 44 giải thưởng, tổng giá trị 20 triệu đồng' }],
   },
-  robots: { index: false, follow: true },
+  twitter: { card: 'summary_large_image', title: 'Quyết Thắng 20/11 – Tổng giải thưởng 20 triệu đồng', images: ['/20-11/opengraph-image'] },
+  robots: { index: true, follow: true },
 };
 
 export default function Page() {
