@@ -11,7 +11,7 @@ export function generateMetadata({params}){
  if(!r) return {};
  const name=r.name;
  return {
-  title:r.kind==='office' ? 'Học Lái Xe Tại '+name+' – B, C1, A1 | Trung Tâm Quyết Thắng' : 'Tư Vấn Học Lái Xe Cho Học Viên '+name+' – Quyết Thắng',
+  title:r.kind==='office' ? 'Học Lái Xe Tại '+name+' – B, C1, A1' : 'Tư Vấn Học Lái Xe Cho Học Viên '+name,
   description:r.kind==='office'
   ? 'Đăng ký học lái xe B, C1, A1, A tại '+name+' cùng Quyết Thắng. Văn phòng: '+r.address+'. Tư vấn học phí, lịch học và hồ sơ.'
   : 'Quyết Thắng tư vấn học lái xe B, C1, A1, A cho học viên khu vực '+name+'. Hỗ trợ thông tin học phí, lịch học, địa điểm thực hành và ghi danh.',
