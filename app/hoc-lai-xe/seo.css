@@ -42,3 +42,26 @@
 .seo-form .seo-consent{display:flex;align-items:flex-start;gap:10px;margin:9px 0;line-height:1.55;font-size:13px;font-weight:500}
 .seo-form .seo-consent input[type="checkbox"]{width:18px;height:18px;flex:0 0 18px;margin-top:3px;accent-color:#0064b5;padding:0}
 .seo-form .seo-consent a{color:#0064b5;text-decoration:underline}
+
+/* Shared admissions and anti-impersonation information */
+.seo-registration-guidance{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.15fr);align-items:stretch;gap:20px;padding:36px 0 6px}
+.seo-registration-overview,.seo-registration-alert{border-radius:18px;padding:26px}
+.seo-registration-overview{background:linear-gradient(140deg,#eff8ff,#fff);border:1px solid #c8e0f2}
+.seo-registration-eyebrow{font-size:12px!important;letter-spacing:.08em;color:#0867a5;font-weight:850;margin:0 0 10px}
+.seo-registration-overview h2{font-size:clamp(22px,2.6vw,29px);line-height:1.3;margin:0 0 16px;color:#074b83}
+.seo-registration-overview p{font-size:15px;line-height:1.75;margin:12px 0;color:#28475f}
+.seo-registration-overview strong{color:#074b83}
+.seo-registration-alert{border:1px solid #f0c37a;border-left:5px solid #b76500;background:#fffaf0;box-shadow:0 8px 28px #8c550016}
+.seo-registration-alert-heading{display:flex;align-items:flex-start;gap:12px;margin-bottom:14px}
+.seo-registration-alert-icon{background:#a95700;color:#fff;width:28px;height:28px;flex:0 0 28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:900;margin-top:3px}
+.seo-registration-alert h3{font-size:21px;line-height:1.35;color:#803d00;margin:0}
+.seo-registration-alert p{font-size:15px;line-height:1.75;color:#573d22;margin:12px 0}
+.seo-registration-alert strong{font-weight:850;color:#713400}
+.seo-registration-actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:20px}
+.seo-registration-actions a{display:inline-flex;align-items:center;justify-content:center;min-height:44px;border-radius:9px;padding:11px 16px;text-align:center;text-decoration:none;font-size:14px;font-weight:800;line-height:1.35}
+.seo-registration-action-primary{background:#b71d2b;color:#fff}
+.seo-registration-action-secondary{background:#fff;border:1px solid #b76500;color:#7c4203}
+.seo-registration-actions a:focus-visible{outline:3px solid #065eaa;outline-offset:2px}
+#tu-van,#van-phong{scroll-margin-top:24px}
+@media(max-width:900px){.seo-registration-guidance{grid-template-columns:1fr}}
+@media(max-width:520px){.seo-registration-guidance{padding:24px 0 0;gap:14px}.seo-registration-overview,.seo-registration-alert{padding:20px}.seo-registration-actions{flex-direction:column}.seo-registration-actions a{width:100%}.seo-registration-alert h3{font-size:19px}}
