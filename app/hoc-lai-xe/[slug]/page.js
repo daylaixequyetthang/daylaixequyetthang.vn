@@ -11,13 +11,13 @@ export function generateMetadata({params}){
  if(!r) return {};
  const name=r.name;
  return {
-  title:'Tư Vấn Học Lái Xe '+name+' – Đăng Ký Online B, C1, A1',
+  title:r.kind==='office' ? 'Học Lái Xe Tại '+name+' – B, C1, A1 | Trung Tâm Quyết Thắng' : 'Tư Vấn Học Lái Xe Cho Học Viên '+name+' – Quyết Thắng',
   description:r.kind==='office'
-  ? 'Tìm hiểu học lái xe hạng B, C1 tại '+name+'. Văn phòng Quyết Thắng: '+r.address+'. Hướng dẫn hồ sơ và đăng ký tư vấn online.'
-  : 'Người ở '+name+' có thể đăng ký tư vấn khóa học lái xe B, C1, A1 từ xa với Quyết Thắng. Xác nhận nơi học thực tế, lịch và hồ sơ trước khi đăng ký.',
+  ? 'Đăng ký học lái xe B, C1, A1, A tại '+name+' cùng Quyết Thắng. Văn phòng: '+r.address+'. Tư vấn học phí, lịch học và hồ sơ.'
+  : 'Quyết Thắng tư vấn học lái xe B, C1, A1, A cho học viên khu vực '+name+'. Hỗ trợ thông tin học phí, lịch học, địa điểm thực hành và ghi danh.',
   alternates:{canonical:BASE+'/hoc-lai-xe/'+r.slug},
   robots:regionIndexable(r)?{index:true,follow:true}:{index:false,follow:true},
-  openGraph:{url:BASE+'/hoc-lai-xe/'+r.slug,title:'Học lái xe – Tư vấn tại '+name+' | Quyết Thắng'},
+  openGraph:{url:BASE+'/hoc-lai-xe/'+r.slug,title:'Khóa học lái xe – Hỗ trợ học viên '+name+' | Quyết Thắng'},
  };
 }
 export default function RegionPage({params}){
@@ -34,22 +34,22 @@ export default function RegionPage({params}){
  }:null;
  return <main className="seo-page">
   {schema && <script type="application/ld+json" dangerouslySetInnerHTML={{__html:JSON.stringify(schema)}} />}
-  <div className="seo-head"><div className="seo-wrap"><Link className="seo-back" href="/hoc-lai-xe">← Các khu vực hỗ trợ</Link><p className="seo-eyebrow">{office?'VĂN PHÒNG TIẾP NHẬN THỰC TẾ':'TIẾP NHẬN TƯ VẤN ONLINE'}</p>{office ? <h1>Học lái xe tại {r.name} – tư vấn B, C1, A1 online</h1> : <h1>Đăng ký tư vấn học lái xe online từ {r.name}</h1>}<p>{r.intro}</p></div></div>
+  <div className="seo-head"><div className="seo-wrap"><Link className="seo-back" href="/hoc-lai-xe">← Chọn khu vực tư vấn</Link><p className="seo-eyebrow">{office?'QUYẾT THẮNG CHÀO ĐÓN BẠN':'TƯ VẤN KHÓA HỌC MIỄN PHÍ'}</p>{office ? <h1>Học lái xe tại {r.name} cùng Quyết Thắng</h1> : <h1>Tư vấn học lái xe cho học viên khu vực {r.name}</h1>}<p>{r.intro}</p></div></div>
   <div className="seo-wrap">
    <section className="seo-section seo-grid">
     <div>
-     <article className="seo-panel"><h2>{office?'Thông tin văn phòng '+r.name:'Thông tin đăng ký cho khu vực '+r.name}</h2>
+     <article className="seo-panel"><h2>{office?'Hỗ trợ học viên tại văn phòng '+r.name:'Tìm hiểu khóa học lái xe dành cho học viên '+r.name}</h2>
       <p>{r.detail}</p>
-      {office?<><p><strong>Địa chỉ tiếp nhận:</strong> {r.address}</p><p><a href={r.maps} target="_blank" rel="noopener noreferrer">Xem vị trí văn phòng trên Google Maps ↗</a></p></>:<p className="seo-notice">Hiện không công bố văn phòng hoặc địa điểm dạy thực hành trực tiếp tại {r.name}. Việc đăng ký online là bước tư vấn, không phải đăng ký khóa học đã được xác nhận.</p>}
-      <h3>Những địa danh người học thường tìm kiếm</h3><p>Người quan tâm ở {r.places.join(', ')} có thể gửi câu hỏi và xác nhận kế hoạch học phù hợp.</p>
+      {office?<><p><strong>Địa chỉ tiếp nhận:</strong> {r.address}</p><p><a href={r.maps} target="_blank" rel="noopener noreferrer">Xem vị trí văn phòng trên Google Maps ↗</a></p></>:<p className="seo-kicker">Nhận tư vấn từ xa ngay tại {r.name}. Đội ngũ Quyết Thắng sẽ giới thiệu văn phòng tiếp nhận và hướng dẫn lịch học, địa điểm thực hành phù hợp với khóa bạn chọn.</p>}
+      <h3>Khu vực lân cận được hỗ trợ tư vấn</h3><p>Học viên ở {r.places.join(', ')} có thể liên hệ để được tư vấn và lựa chọn khóa học phù hợp.</p>
       <div className="seo-chip-list">{r.places.map(p=><span key={p}>{p}</span>)}</div>
      </article>
-     <article className="seo-panel" style={{marginTop:18}}><h2>Đăng ký cần chuẩn bị gì?</h2><ol><li>Chọn khóa B, C1, A1 hoặc A phù hợp nhu cầu.</li><li>Để lại số liên hệ và khu vực sinh sống để được tư vấn lịch.</li><li>Hỏi rõ nơi học thực hành, học phí, giấy tờ và điều kiện trước khi ghi danh.</li></ol><p>Hồ sơ chính thức được hướng dẫn sau khi tư vấn; không cần gửi ảnh CCCD trên trang này.</p><div className="seo-inline"><Link href="/khoa-hoc/hang-b">Tìm hiểu hạng B</Link><Link href="/khoa-hoc/hang-c1">Tìm hiểu hạng C1</Link><Link href="/thi-thu">Thi thử 600 câu</Link></div></article>
+     <article className="seo-panel" style={{marginTop:18}}><h2>Ghi danh học lái xe dễ dàng</h2><ol><li>Lựa chọn khóa học B, C1, A1, A hoặc nâng hạng tùy nhu cầu.</li><li>Để lại thông tin để được nhân viên Quyết Thắng tư vấn học phí và lịch học.</li><li>Nhận hướng dẫn chuẩn bị hồ sơ và địa điểm thực hành của khóa học.</li></ol><p>Bạn chỉ cần họ tên và số điện thoại để bắt đầu; nhân viên sẽ hướng dẫn giấy tờ cần thiết khi ghi danh.</p><div className="seo-inline"><Link href="/khoa-hoc/hang-b">Tìm hiểu hạng B</Link><Link href="/khoa-hoc/hang-c1">Tìm hiểu hạng C1</Link><Link href="/thi-thu">Thi thử 600 câu</Link></div></article>
     </div>
     <SeoConsultForm area={r.name} heading={'Nhận tư vấn học lái xe '+r.name}/>
    </section>
-   <section className="seo-section"><h2>Ba văn phòng hiện có của Quyết Thắng</h2><div className="seo-links">{BRANCHES.map(o=><Link key={o.slug} href={'/hoc-lai-xe/'+o.slug}>{o.name}<small>{o.address}</small></Link>)}</div></section>
+   <section className="seo-section"><h2>Các văn phòng tư vấn và tiếp nhận hồ sơ</h2><div className="seo-links">{BRANCHES.map(o=><Link key={o.slug} href={'/hoc-lai-xe/'+o.slug}>{o.name}<small>{o.address}</small></Link>)}</div></section>
   </div>
-  <footer className="seo-bottom"><div className="seo-wrap">Quyết Thắng · Tư vấn đăng ký online <a href="tel:0848751111">084 875 1111</a> · <Link href="/">Trang chủ</Link></div></footer>
+  <footer className="seo-bottom"><div className="seo-wrap">Trung Tâm GDNN Quyết Thắng · Tư vấn miễn phí <a href="tel:0848751111">084 875 1111</a> · <Link href="/">Trang chủ</Link></div></footer>
  </main>
 }
