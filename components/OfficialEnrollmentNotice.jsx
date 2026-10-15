@@ -3,18 +3,20 @@
  * Dùng chung cho trang học lái xe theo khu vực và trang khóa học.
  * Không giả định có văn phòng/giáo viên tại Đồng Nai hoặc TP.HCM.
  */
-export default function OfficialEnrollmentNotice({ outsideBinhThuan = false }) {
+export default function OfficialEnrollmentNotice({ outsideBinhThuan = false, fromPhuQuy = false }) {
   return (
     <section className="seo-registration-guidance" aria-label="Hướng dẫn học và đăng ký đúng kênh">
       <div className="seo-registration-overview">
         <p className="seo-registration-eyebrow">HỌC THUẬN TIỆN · ĐĂNG KÝ AN TÂM</p>
-        <h2>{outsideBinhThuan ? 'Tư vấn lộ trình học phù hợp, thi tại Phan Thiết' : 'Học tại địa phương, thi tập trung tại Phan Thiết'}</h2>
+        <h2>{outsideBinhThuan ? 'Tư vấn lộ trình học phù hợp, thi tại Phan Thiết' : fromPhuQuy ? 'Tư vấn học từ Phú Quý, thi tập trung tại Phan Thiết' : 'Học tại địa phương, thi tập trung tại Phan Thiết'}</h2>
         <p>
           Trung Tâm GDNN Quyết Thắng có đội ngũ giáo viên tại nhiều khu vực Bình Thuận.
           Trung tâm trực tiếp phân công giáo viên, sắp xếp lịch và địa điểm học thực hành theo từng khóa.
         </p>
         {outsideBinhThuan ? (
           <p>Với học viên ở Đồng Nai hoặc TP. Hồ Chí Minh, nhân viên sẽ tư vấn địa điểm học tại khu vực đào tạo của Quyết Thắng và phương án di chuyển trước khi ghi danh.</p>
+        ) : fromPhuQuy ? (
+          <p>Học viên ở Phú Quý sẽ được tư vấn địa điểm học thực hành, lịch tập trung trên đất liền và phương án di chuyển phù hợp trước khi ghi danh.</p>
         ) : (
           <p>Học viên có thể học tại khu vực mình sinh sống theo kế hoạch phân công giáo viên của trường. Nhân viên sẽ thông tin lịch và địa điểm thực hành cụ thể khi tư vấn.</p>
         )}
