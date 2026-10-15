@@ -3,7 +3,7 @@ import { BINH_THUAN, REMOTE_REGIONS, BRANCHES } from '@/lib/seo-regions';
 import SeoConsultForm from '@/components/SeoConsultForm';
 const ROOT='https://daylaixequyetthang.vn';
 export const metadata={
- title:'Học Lái Xe Quyết Thắng – Văn Phòng Và Khu Vực Tư Vấn',
+ title:'Học Lái Xe – Văn Phòng Và Khu Vực Tư Vấn',
  description:'Khám phá khóa học lái xe B, C1, A1, A tại Quyết Thắng. Tư vấn miễn phí, lịch học linh hoạt và hỗ trợ đăng ký tại Phan Thiết, La Gi, Bắc Bình hoặc từ xa.',
  alternates:{canonical:ROOT+'/hoc-lai-xe'},
  openGraph:{url:ROOT+'/hoc-lai-xe',title:'Học lái xe Quyết Thắng – Chọn khu vực tư vấn'},
