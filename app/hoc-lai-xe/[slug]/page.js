@@ -37,7 +37,7 @@ export default function RegionPage({params}){
   {schema && <script type="application/ld+json" dangerouslySetInnerHTML={{__html:JSON.stringify(schema)}} />}
   <div className="seo-head"><div className="seo-wrap"><Link className="seo-back" href="/hoc-lai-xe">← Chọn khu vực tư vấn</Link><p className="seo-eyebrow">{office?'QUYẾT THẮNG CHÀO ĐÓN BẠN':'TƯ VẤN KHÓA HỌC MIỄN PHÍ'}</p>{office ? <h1>Học lái xe tại {r.name} cùng Quyết Thắng</h1> : <h1>Tư vấn học lái xe cho học viên khu vực {r.name}</h1>}<p>{r.intro}</p></div></div>
   <div className="seo-wrap">
-   <OfficialEnrollmentNotice outsideBinhThuan={r.kind==='regional'} />
+   <OfficialEnrollmentNotice outsideBinhThuan={r.kind==='regional'} fromPhuQuy={r.slug==='phu-quy'} />
    <section className="seo-section seo-grid">
     <div>
      <article className="seo-panel"><h2>{office?'Hỗ trợ học viên tại văn phòng '+r.name:'Tìm hiểu khóa học lái xe dành cho học viên '+r.name}</h2>
