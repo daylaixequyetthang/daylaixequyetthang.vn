@@ -46,7 +46,7 @@ export default function HomeClient() {
           <div>
             <span className="eyebrow on-dark">18 năm · 35.000+ học viên</span>
             <h1>Học lái xe B, C1, A1, A tại khu vực Bình Thuận cùng <span className="grad-text-blue">Quyết Thắng</span></h1>
-            <p className="lead">Tư vấn khóa học, học phí và lịch đào tạo rõ ràng. Đăng ký online từ khu vực Bình Thuận, Đồng Nai, TP.HCM; xác nhận nơi học thực tế trước khi ghi danh.</p>
+            <p className="lead">Tìm hiểu các khóa học lái xe B, C1, A1, A với Quyết Thắng. Nhận tư vấn học phí, lịch học và hướng dẫn ghi danh nhanh chóng qua điện thoại hoặc trực tuyến.</p>
             <div className="hero-cta">
               <a href="#dangky" className="btn btn-light">Nhận tư vấn & báo giá</a>
               <a href={`tel:${PHONE}`} className="btn btn-ghost">📞 Gọi {PHONE_DISPLAY}</a>
@@ -120,12 +120,12 @@ export default function HomeClient() {
         <div className="wrap">
           <div className="sec-head">
             <span className="eyebrow">Khu vực tư vấn</span>
-            <h2>Đăng ký học lái xe online theo địa phương</h2>
-            <p>Văn phòng tại Phan Thiết, La Gi, Bắc Bình. Tiếp nhận tư vấn từ các địa phương Bình Thuận, Đồng Nai và TP.HCM; cần xác nhận nơi học thực tế trước khi ghi danh.</p>
+            <h2>Chọn khu vực để được tư vấn học lái xe</h2>
+            <p>Quyết Thắng có văn phòng tại Phan Thiết, La Gi và Bắc Bình; đồng thời hỗ trợ tư vấn trực tuyến cho học viên ở các khu vực lân cận, Đồng Nai và TP.HCM.</p>
           </div>
           <div className="dual-grid">
             <div className="dual-card"><h3>Khóa học lái xe B, C1, A1, A</h3><p>Xem phạm vi hạng bằng, hướng dẫn hồ sơ và nhận tư vấn học phí.</p><a className="btn btn-blue" href="/khoa-hoc">Xem các khóa học</a></div>
-            <div className="dual-card"><h3>Phan Thiết · La Gi · Bắc Bình và các khu vực khác</h3><p>Chọn địa phương để xem điểm tiếp nhận thực tế và đăng ký tư vấn online.</p><a className="btn btn-blue" href="/hoc-lai-xe">Xem các khu vực hỗ trợ</a></div>
+            <div className="dual-card"><h3>Phan Thiết · La Gi · Bắc Bình và các khu vực khác</h3><p>Chọn khu vực của bạn để tìm hiểu văn phòng Quyết Thắng và nhận hướng dẫn đăng ký thuận tiện.</p><a className="btn btn-blue" href="/hoc-lai-xe">Xem các khu vực hỗ trợ</a></div>
           </div>
         </div>
       </section>
