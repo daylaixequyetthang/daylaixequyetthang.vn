@@ -37,8 +37,8 @@ export default function SeoConsultForm({ area = '', course = 'Hạng B', heading
       setState('success');
     } catch (err) { setState('error'); setMessage(err.message || 'Không thể gửi yêu cầu lúc này.'); }
   }
-  if (state === 'success') return <section className="seo-form seo-success" role="status"><h2>Cảm ơn bạn đã quan tâm Quyết Thắng!</h2><p>Nhân viên Quyết Thắng sẽ sớm liên hệ để tư vấn khóa học, học phí và lịch học phù hợp với bạn.</p><a href="tel:0848751111">Gọi 084 875 1111</a></section>;
-  return <form className="seo-form" onSubmit={submit} aria-label="Đăng ký tư vấn học lái xe online">
+  if (state === 'success') return <section id="tu-van" className="seo-form seo-success" role="status"><h2>Cảm ơn bạn đã quan tâm Quyết Thắng!</h2><p>Nhân viên Quyết Thắng sẽ sớm liên hệ để tư vấn khóa học, học phí và lịch học phù hợp với bạn.</p><a href="tel:0848751111">Gọi 084 875 1111</a></section>;
+  return <form id="tu-van" className="seo-form" onSubmit={submit} aria-label="Đăng ký tư vấn học lái xe online">
     <h2>{heading}</h2>
     <p>Chỉ cần họ tên và số điện thoại, đội ngũ Quyết Thắng sẽ liên hệ tư vấn khóa học và hướng dẫn ghi danh tận tình.</p>
     <label htmlFor="seo-name">Họ và tên</label>
