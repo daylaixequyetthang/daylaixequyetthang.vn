@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import { captureTracking, getTracking } from '@/lib/tracking';
 import { trackEvent } from '@/lib/track';
 
-export default function SeoConsultForm({ area = '', course = 'Hạng B', heading = 'Nhận tư vấn đăng ký online' }) {
+export default function SeoConsultForm({ area = '', course = 'Hạng B', heading = 'Nhận tư vấn khóa học miễn phí' }) {
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
   const [chosen, setChosen] = useState(course);
@@ -37,10 +37,10 @@ export default function SeoConsultForm({ area = '', course = 'Hạng B', heading
       setState('success');
     } catch (err) { setState('error'); setMessage(err.message || 'Không thể gửi yêu cầu lúc này.'); }
   }
-  if (state === 'success') return <section className="seo-form seo-success" role="status"><h2>Đã tiếp nhận yêu cầu tư vấn</h2><p>Quyết Thắng sẽ liên hệ theo số điện thoại anh/chị cung cấp. Địa điểm và lịch học sẽ được trao đổi trước khi đăng ký chính thức.</p><a href="tel:0848751111">Gọi 084 875 1111</a></section>;
+  if (state === 'success') return <section className="seo-form seo-success" role="status"><h2>Cảm ơn bạn đã quan tâm Quyết Thắng!</h2><p>Nhân viên Quyết Thắng sẽ sớm liên hệ để tư vấn khóa học, học phí và lịch học phù hợp với bạn.</p><a href="tel:0848751111">Gọi 084 875 1111</a></section>;
   return <form className="seo-form" onSubmit={submit} aria-label="Đăng ký tư vấn học lái xe online">
     <h2>{heading}</h2>
-    <p>Để lại thông tin để được hướng dẫn hồ sơ, khóa học và nơi tham gia đào tạo phù hợp. Không cần nhập CCCD hoặc thanh toán ở bước này.</p>
+    <p>Chỉ cần họ tên và số điện thoại, đội ngũ Quyết Thắng sẽ liên hệ tư vấn khóa học và hướng dẫn ghi danh tận tình.</p>
     <label htmlFor="seo-name">Họ và tên</label>
     <input id="seo-name" autoComplete="name" required maxLength={100} value={name} onChange={e=>setName(e.target.value)} placeholder="Nguyễn Văn A" />
     <label htmlFor="seo-phone">Số điện thoại / Zalo</label>
@@ -52,7 +52,7 @@ export default function SeoConsultForm({ area = '', course = 'Hạng B', heading
     <label className="seo-consent"><input type="checkbox" required checked={consent} onChange={e=>setConsent(e.target.checked)} /><span>Tôi đồng ý để Quyết Thắng sử dụng thông tin đã cung cấp nhằm liên hệ tư vấn khóa học theo <a href="/chinh-sach-bao-mat">chính sách quyền riêng tư</a>.</span></label>
     {state==='error' && <p className="seo-alert" role="alert">{message}</p>}
     {state==='sending' && <p role="status">Đang gửi yêu cầu...</p>}
-    <button type="submit" disabled={state==='sending'} aria-busy={state==='sending'}>{state==='sending'?'Đang gửi...':'Gửi yêu cầu tư vấn'}</button>
-    <small>Thông tin chỉ phục vụ việc liên hệ tư vấn. Xem <a href="/chinh-sach-bao-mat">chính sách quyền riêng tư</a>.</small>
+    <button type="submit" disabled={state==='sending'} aria-busy={state==='sending'}>{state==='sending'?'Đang gửi...':'Đăng ký nhận tư vấn'}</button>
+    <small>Thông tin của bạn được sử dụng để liên hệ tư vấn. Xem <a href="/chinh-sach-bao-mat">chính sách quyền riêng tư</a>.</small>
   </form>;
 }
