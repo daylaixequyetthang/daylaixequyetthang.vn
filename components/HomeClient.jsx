@@ -284,7 +284,7 @@ export default function HomeClient() {
 
           {/* Văn phòng tiêu biểu - map nhỏ + chỉ đường (phụ, không phải trọng tâm) */}
           <div className="off-wrap">
-            <h3 className="off-title">Một số văn phòng ghi danh <span>(hoặc đăng ký online — tư vấn tận nơi)</span></h3>
+            <h3 className="off-title">Ba văn phòng ghi danh chính thức <span>(hoặc đăng ký tư vấn trực tuyến trên website)</span></h3>
             <div className="off-grid">
               {OFFICES.map((o, i) => (
                 <div key={i} className="off-card">
