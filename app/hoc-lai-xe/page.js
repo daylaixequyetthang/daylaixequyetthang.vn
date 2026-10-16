@@ -1,21 +1,23 @@
 import Link from 'next/link';
 import { BINH_THUAN, REMOTE_REGIONS, BRANCHES } from '@/lib/seo-regions';
 import SeoConsultForm from '@/components/SeoConsultForm';
+import OfficialEnrollmentNotice from '@/components/OfficialEnrollmentNotice';
 const ROOT='https://daylaixequyetthang.vn';
 export const metadata={
- title:'Khu Vực Tư Vấn Học Lái Xe – Bình Thuận, Đồng Nai, TP.HCM',
- description:'Đăng ký tư vấn học lái xe hạng B, C1, A1, A online. Quyết Thắng có văn phòng tiếp nhận tại Phan Thiết, La Gi, Bắc Bình và hướng dẫn người ở các khu vực khác.',
+ title:'Học Lái Xe – Văn Phòng Và Khu Vực Tư Vấn',
+ description:'Học lái xe cùng Quyết Thắng tại khu vực Bình Thuận, giáo viên do trung tâm phân công, thi tại Phan Thiết. Đăng ký tại Phan Thiết, La Gi, Bắc Bình hoặc online.',
  alternates:{canonical:ROOT+'/hoc-lai-xe'},
- openGraph:{url:ROOT+'/hoc-lai-xe',title:'Khu vực học lái xe – Quyết Thắng'},
+ openGraph:{url:ROOT+'/hoc-lai-xe',title:'Học lái xe Quyết Thắng – Chọn khu vực tư vấn'},
 };
 export default function RegionIndex(){
  return <main className="seo-page">
-  <div className="seo-head"><div className="seo-wrap"><a className="seo-back" href="/">← Trang chủ Quyết Thắng</a><p className="seo-eyebrow">TƯ VẤN VÀ ĐĂNG KÝ ONLINE</p><h1>Học lái xe tại khu vực Bình Thuận và đăng ký từ xa</h1><p>Lựa chọn địa phương để xem thông tin tư vấn học bằng B, C1, A1, A. Đăng ký online trước để xác nhận nơi học thực tế, thời gian và hồ sơ.</p></div></div>
+  <div className="seo-head"><div className="seo-wrap"><a className="seo-back" href="/">← Trang chủ Quyết Thắng</a><p className="seo-eyebrow">ĐỒNG HÀNH CÙNG BẠN TRÊN MỌI HÀNH TRÌNH</p><h1>Chọn khu vực thuận tiện để bắt đầu học lái xe</h1><p>Quyết Thắng có giáo viên tại nhiều khu vực Bình Thuận, sắp xếp lịch học theo kế hoạch phân công và tổ chức thi sát hạch tập trung tại Phan Thiết. Đăng ký tại ba văn phòng hoặc trực tuyến để được hướng dẫn hồ sơ nhanh gọn.</p></div></div>
   <div className="seo-wrap">
-   <section className="seo-section"><h2>Văn phòng tiếp nhận trực tiếp</h2><div className="seo-links">{BRANCHES.map(a=><Link key={a.slug} href={'/hoc-lai-xe/'+a.slug}>{a.name}<small>{a.address}</small></Link>)}</div></section>
-   <section className="seo-section"><h2>Các địa danh khác trong khu vực Bình Thuận</h2><p>Đây là các tên địa danh được người học sử dụng khi tìm kiếm. Một số đơn vị hành chính đã được sắp xếp từ năm 2025. Không phải mọi địa điểm đều có văn phòng Quyết Thắng.</p><div className="seo-links">{BINH_THUAN.filter(x=>x.kind!=='office').map(a=><Link key={a.slug} href={'/hoc-lai-xe/'+a.slug}>{a.name}<small>Yêu cầu tư vấn online; xác nhận nơi học khi liên hệ</small></Link>)}</div></section>
-   <section className="seo-section"><h2>Tư vấn từ Đồng Nai và TP.HCM</h2><div className="seo-links">{REMOTE_REGIONS.map(a=><Link key={a.slug} href={'/hoc-lai-xe/'+a.slug}>{a.name}<small>Đăng ký thông tin online, chưa có cơ sở tại địa phương được xác nhận</small></Link>)}</div></section>
-   <section className="seo-section seo-grid"><div className="seo-panel"><h2>Cách đăng ký</h2><ol><li>Chọn hạng bằng B, C1, A1, A hoặc nâng hạng.</li><li>Gửi tên, số điện thoại và địa phương hiện tại.</li><li>Nhân viên tư vấn hồ sơ, học phí và lịch học thực tế.</li><li>Chỉ hoàn tất thủ tục và thanh toán theo hướng dẫn chính thức sau khi xác minh thông tin.</li></ol><p className="seo-notice">Học lý thuyết có thể có nội dung trực tuyến; học thực hành và sát hạch vẫn phải tham gia tại địa điểm được trung tâm/cơ quan có thẩm quyền xác nhận. Không có dịch vụ cấp bằng online.</p><Link href="/khoa-hoc">Xem các khóa học →</Link></div><SeoConsultForm area="Bình Thuận / Đồng Nai / TP.HCM" /></section>
+   <OfficialEnrollmentNotice />
+   <section id="van-phong" className="seo-section"><h2>Đến văn phòng Quyết Thắng gần bạn</h2><div className="seo-links">{BRANCHES.map(a=><Link key={a.slug} href={'/hoc-lai-xe/'+a.slug}>{a.name}<small>{a.address}</small></Link>)}</div></section>
+   <section className="seo-section"><h2>Tư vấn học lái xe cho học viên các khu vực lân cận</h2><p>Dù ở khu vực nào, bạn vẫn có thể liên hệ Quyết Thắng để được giới thiệu khóa học, lịch học và địa điểm thực hành phù hợp.</p><div className="seo-links">{BINH_THUAN.filter(x=>x.kind!=='office').map(a=><Link key={a.slug} href={'/hoc-lai-xe/'+a.slug}>{a.name}<small>Nhận tư vấn khóa học và hướng dẫn ghi danh</small></Link>)}</div></section>
+   <section className="seo-section"><h2>Hỗ trợ học viên tại Đồng Nai và TP. Hồ Chí Minh</h2><div className="seo-links">{REMOTE_REGIONS.map(a=><Link key={a.slug} href={'/hoc-lai-xe/'+a.slug}>{a.name}<small>Tư vấn trực tuyến, hỗ trợ chọn khóa học phù hợp</small></Link>)}</div></section>
+   <section className="seo-section seo-grid"><div className="seo-panel"><h2>Bắt đầu khóa học trong 4 bước</h2><ol><li>Chọn hạng bằng bạn muốn học: B, C1, A1, A hoặc nâng hạng.</li><li>Đăng ký tại văn phòng Phan Thiết, La Gi, Bắc Bình hoặc để lại thông tin trực tuyến để được liên hệ.</li><li>Nhận tư vấn chi tiết về học phí, lịch học và địa điểm thực hành.</li><li>Chuẩn bị hồ sơ và hoàn tất ghi danh theo hướng dẫn của trung tâm.</li></ol><p className="seo-notice">Hỗ trợ học lý thuyết trực tuyến theo chương trình; các buổi thực hành và kỳ sát hạch được tham gia trực tiếp theo lịch của khóa học.</p><Link href="/khoa-hoc">Khám phá các khóa học →</Link></div><SeoConsultForm area="Bình Thuận / Đồng Nai / TP.HCM" /></section>
   </div>
   <footer className="seo-bottom"><div className="seo-wrap">Trung Tâm GDNN Quyết Thắng · <a href="tel:0848751111">084 875 1111</a> · <a href="/">Trang chủ</a></div></footer>
  </main>

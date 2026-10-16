@@ -46,7 +46,7 @@ export default function HomeClient() {
           <div>
             <span className="eyebrow on-dark">18 năm · 35.000+ học viên</span>
             <h1>Học lái xe B, C1, A1, A tại khu vực Bình Thuận cùng <span className="grad-text-blue">Quyết Thắng</span></h1>
-            <p className="lead">Tư vấn khóa học, học phí và lịch đào tạo rõ ràng. Đăng ký online từ khu vực Bình Thuận, Đồng Nai, TP.HCM; xác nhận nơi học thực tế trước khi ghi danh.</p>
+            <p className="lead">Tìm hiểu các khóa học lái xe B, C1, A1, A với Quyết Thắng. Nhận tư vấn học phí, lịch học và hướng dẫn ghi danh nhanh chóng qua điện thoại hoặc trực tuyến.</p>
             <div className="hero-cta">
               <a href="#dangky" className="btn btn-light">Nhận tư vấn & báo giá</a>
               <a href={`tel:${PHONE}`} className="btn btn-ghost">📞 Gọi {PHONE_DISPLAY}</a>
@@ -120,13 +120,38 @@ export default function HomeClient() {
         <div className="wrap">
           <div className="sec-head">
             <span className="eyebrow">Khu vực tư vấn</span>
-            <h2>Đăng ký học lái xe online theo địa phương</h2>
-            <p>Văn phòng tại Phan Thiết, La Gi, Bắc Bình. Tiếp nhận tư vấn từ các địa phương Bình Thuận, Đồng Nai và TP.HCM; cần xác nhận nơi học thực tế trước khi ghi danh.</p>
+            <h2>Chọn khu vực để được tư vấn học lái xe</h2>
+            <p>Quyết Thắng có văn phòng tại Phan Thiết, La Gi và Bắc Bình; đồng thời hỗ trợ tư vấn trực tuyến cho học viên ở các khu vực lân cận, Đồng Nai và TP.HCM.</p>
           </div>
-          <div className="dual-grid">
-            <div className="dual-card"><h3>Khóa học lái xe B, C1, A1, A</h3><p>Xem phạm vi hạng bằng, hướng dẫn hồ sơ và nhận tư vấn học phí.</p><a className="btn btn-blue" href="/khoa-hoc">Xem các khóa học</a></div>
-            <div className="dual-card"><h3>Phan Thiết · La Gi · Bắc Bình và các khu vực khác</h3><p>Chọn địa phương để xem điểm tiếp nhận thực tế và đăng ký tư vấn online.</p><a className="btn btn-blue" href="/hoc-lai-xe">Xem các khu vực hỗ trợ</a></div>
+          <div className="dual-grid regional-cta-grid">
+            <div className="dual-card regional-cta-card">
+              <span className="regional-card-eyebrow">CHƯƠNG TRÌNH ĐÀO TẠO</span>
+              <h3>Học lái xe hạng B, C1, A1, A</h3>
+              <p>Tìm hiểu các hạng bằng, chương trình học, học phí và được hướng dẫn chuẩn bị hồ sơ đăng ký.</p>
+              <a className="btn btn-blue" href="/khoa-hoc">Tìm hiểu các khóa học</a>
+            </div>
+            <div className="dual-card regional-cta-card">
+              <span className="regional-card-eyebrow">HỌC TẠI KHU VỰC BÌNH THUẬN</span>
+              <h3>Giáo viên tại nhiều địa phương, thi ở Phan Thiết</h3>
+              <p>Trung tâm phân công giáo viên và lịch thực hành phù hợp. Đăng ký tại Phan Thiết, La Gi, Bắc Bình hoặc trực tuyến.</p>
+              <a className="btn btn-blue" href="/hoc-lai-xe">Xem khu vực và cách đăng ký</a>
+            </div>
           </div>
+          <aside className="official-channel-notice" aria-labelledby="official-channel-title">
+            <div className="official-channel-heading">
+              <span className="official-channel-symbol" aria-hidden="true">!</span>
+              <div>
+                <span className="official-channel-label">BẢO VỆ QUYỀN LỢI HỌC VIÊN</span>
+                <h3 id="official-channel-title">Lưu ý: Chỉ đăng ký qua kênh chính thức của Quyết Thắng</h3>
+              </div>
+            </div>
+            <p>Học viên đăng ký tại <strong>ba văn phòng Phan Thiết, La Gi, Bắc Bình</strong> hoặc qua website <strong>daylaixequyetthang.vn</strong> để được hướng dẫn thủ tục, cung cấp học phí minh bạch và hợp đồng đào tạo đầy đủ. <strong>Trung tâm chịu trách nhiệm phân công giáo viên giảng dạy.</strong></p>
+            <p>Hãy cảnh giác với các cá nhân hoặc kênh chưa được xác nhận, báo giá không rõ ràng, yêu cầu đóng thêm tiền hoặc không cung cấp hợp đồng. <strong>Liên hệ trung tâm để kiểm tra trước khi thanh toán.</strong></p>
+            <div className="official-channel-actions">
+              <a className="btn btn-blue" href="/hoc-lai-xe">Đăng ký và xem hướng dẫn chính thức</a>
+              <a className="official-channel-hotline" href="tel:0848751111">Xác minh học phí: 084 875 1111</a>
+            </div>
+          </aside>
         </div>
       </section>
 
@@ -259,7 +284,7 @@ export default function HomeClient() {
 
           {/* Văn phòng tiêu biểu - map nhỏ + chỉ đường (phụ, không phải trọng tâm) */}
           <div className="off-wrap">
-            <h3 className="off-title">Một số văn phòng ghi danh <span>(hoặc đăng ký online — tư vấn tận nơi)</span></h3>
+            <h3 className="off-title">Ba văn phòng ghi danh chính thức <span>(hoặc đăng ký tư vấn trực tuyến trên website)</span></h3>
             <div className="off-grid">
               {OFFICES.map((o, i) => (
                 <div key={i} className="off-card">
