@@ -123,10 +123,35 @@ export default function HomeClient() {
             <h2>Chọn khu vực để được tư vấn học lái xe</h2>
             <p>Quyết Thắng có văn phòng tại Phan Thiết, La Gi và Bắc Bình; đồng thời hỗ trợ tư vấn trực tuyến cho học viên ở các khu vực lân cận, Đồng Nai và TP.HCM.</p>
           </div>
-          <div className="dual-grid">
-            <div className="dual-card"><h3>Khóa học lái xe B, C1, A1, A</h3><p>Xem phạm vi hạng bằng, hướng dẫn hồ sơ và nhận tư vấn học phí.</p><a className="btn btn-blue" href="/khoa-hoc">Xem các khóa học</a></div>
-            <div className="dual-card"><h3>Phan Thiết · La Gi · Bắc Bình và các khu vực khác</h3><p>Chọn khu vực của bạn để tìm hiểu văn phòng Quyết Thắng và nhận hướng dẫn đăng ký thuận tiện.</p><a className="btn btn-blue" href="/hoc-lai-xe">Xem các khu vực hỗ trợ</a></div>
+          <div className="dual-grid regional-cta-grid">
+            <div className="dual-card regional-cta-card">
+              <span className="regional-card-eyebrow">CHƯƠNG TRÌNH ĐÀO TẠO</span>
+              <h3>Học lái xe hạng B, C1, A1, A</h3>
+              <p>Tìm hiểu các hạng bằng, chương trình học, học phí và được hướng dẫn chuẩn bị hồ sơ đăng ký.</p>
+              <a className="btn btn-blue" href="/khoa-hoc">Tìm hiểu các khóa học</a>
+            </div>
+            <div className="dual-card regional-cta-card">
+              <span className="regional-card-eyebrow">HỌC TẠI KHU VỰC BÌNH THUẬN</span>
+              <h3>Giáo viên tại nhiều địa phương, thi ở Phan Thiết</h3>
+              <p>Trung tâm phân công giáo viên và lịch thực hành phù hợp. Đăng ký tại Phan Thiết, La Gi, Bắc Bình hoặc trực tuyến.</p>
+              <a className="btn btn-blue" href="/hoc-lai-xe">Xem khu vực và cách đăng ký</a>
+            </div>
           </div>
+          <aside className="official-channel-notice" aria-labelledby="official-channel-title">
+            <div className="official-channel-heading">
+              <span className="official-channel-symbol" aria-hidden="true">!</span>
+              <div>
+                <span className="official-channel-label">BẢO VỆ QUYỀN LỢI HỌC VIÊN</span>
+                <h3 id="official-channel-title">Lưu ý: Chỉ đăng ký qua kênh chính thức của Quyết Thắng</h3>
+              </div>
+            </div>
+            <p>Học viên đăng ký tại <strong>ba văn phòng Phan Thiết, La Gi, Bắc Bình</strong> hoặc qua website <strong>daylaixequyetthang.vn</strong> để được hướng dẫn thủ tục, cung cấp học phí minh bạch và hợp đồng đào tạo đầy đủ. <strong>Trung tâm chịu trách nhiệm phân công giáo viên giảng dạy.</strong></p>
+            <p>Hãy cảnh giác với các cá nhân hoặc kênh chưa được xác nhận, báo giá không rõ ràng, yêu cầu đóng thêm tiền hoặc không cung cấp hợp đồng. <strong>Liên hệ trung tâm để kiểm tra trước khi thanh toán.</strong></p>
+            <div className="official-channel-actions">
+              <a className="btn btn-blue" href="/hoc-lai-xe">Đăng ký và xem hướng dẫn chính thức</a>
+              <a className="official-channel-hotline" href="tel:0848751111">Xác minh học phí: 084 875 1111</a>
+            </div>
+          </aside>
         </div>
       </section>
 
