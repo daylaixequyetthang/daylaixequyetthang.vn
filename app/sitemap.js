@@ -7,7 +7,7 @@ const BASE='https://daylaixequyetthang.vn';
 export const revalidate = 3600;
 
 export default async function sitemap() {
- const paths=['','/thi-thu','/tra-cuu','/dang-ky','/cap-nhat-quy-dinh','/tin-tuc','/chinh-sach-bao-mat','/20-11','/khoa-hoc','/hoc-lai-xe'];
+ const paths=['','/thi-thu','/luyen-sa-hinh','/tra-cuu','/dang-ky','/cap-nhat-quy-dinh','/tin-tuc','/chinh-sach-bao-mat','/20-11','/khoa-hoc','/hoc-lai-xe'];
  const pages=paths.map(path=>({url:BASE+path}));
  const courses=COURSES_SEO.map(c=>({url:BASE+'/khoa-hoc/'+c.slug}));
  // Only verified locations go into Google sitemap. All other localities remain
