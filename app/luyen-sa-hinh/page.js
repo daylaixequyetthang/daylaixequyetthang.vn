@@ -1,3 +1,4 @@
+import '@/components/home.css';
 import SiteHeader from '@/components/SiteHeader';
 export const metadata = {
   title: 'Luyện sa hình tương tác hạng B và C1 miễn phí',
