@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="vi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#0b1428"><title>Luyện sa hình tương tác | Quyết Thắng</title><link rel="stylesheet" href="./style.css"></head>
+<body>
+<div class="app">
+  <header class="topbar"><div class="identity"><div class="identityMark">QT<span>✓</span></div><div><strong>QUYẾT THẮNG</strong><small>DRIVING LAB <span class="live">●</span> HỌC SA HÌNH</small></div></div><div class="topRight"><span class="version">MÔ PHỎNG TƯƠNG TÁC · BETA 1</span><a href="/dang-ky" target="_parent">Đăng ký học lái <span>↗</span></a></div></header>
+  <div class="content">
+    <aside class="sidebar">
+      <div class="sideHeading"><span>CHƯƠNG TRÌNH</span><span id="lessonCount">11 bài</span></div>
+      <div class="tabs" role="group" aria-label="Chọn hạng xe"><button data-class="bat" class="active">B Tự động</button><button data-class="bmt">B Số sàn</button><button data-class="c1">C1</button></div>
+      <div class="modeGroup" role="group" aria-label="Chọn chế độ"><button id="practiceBtn" class="chosen">▣ Luyện tập</button><button id="examBtn">◷ Thi liên hoàn</button></div>
+      <div class="sectionLabel">DANH SÁCH BÀI TẬP <span id="progressCount">0 / 11</span></div>
+      <div id="lessonList" class="lessonList"></div>
+      <div class="sidebarFoot"><span>◎ Học từng bài, tự kiểm tra thao tác</span><a href="/thi-thu" target="_parent">Ôn tập lý thuyết 600 câu ↗</a></div>
+    </aside>
+    <main class="stage">
+      <div class="stageTop"><div><div class="breadcrumb" id="breadcrumb">BÀI 01 / 11 · HẠNG B</div><h1 id="lessonTitle">Xuất phát</h1><p id="lessonDesc">Luyện thao tác xuất phát đúng quy trình.</p></div><div class="stageActions"><button id="viewBtn" title="Thay đổi góc nhìn">◉ <span id="viewName">3D sau xe</span></button><button id="restartBtn" title="Khởi động lại bài">↻ Làm lại</button></div></div>
+      <div class="screen"><canvas id="scene" aria-label="Mô phỏng lái xe tương tác" tabindex="0"></canvas>
+        <div class="hud"><div class="hudCard speed"><span>TỐC ĐỘ</span><strong id="speedText">00<small> km/h</small></strong></div><div class="hudCard"><span>ĐIỂM LUYỆN</span><strong id="scoreText">100</strong></div><div class="hudCard"><span>THỜI GIAN</span><strong id="clockText">00:00</strong></div></div>
+        <div class="viewLabel" id="viewLabel">GÓC NHÌN THEO XE · CHẠM ◉ ĐỂ ĐỔI</div><div class="screenNotice" id="notice" aria-live="polite"></div>
+        <div class="screenBottom"><div class="direction"><span class="dot green"></span><span id="systemStatus">SẴN SÀNG TẬP LÁI</span></div><div class="gearDisplay" id="gearDisplay">P</div><div class="meter">MÔ PHỎNG HỌC TẬP</div></div>
+      </div>
+      <div class="guide"><div class="guideIcon">✧</div><div><small>HƯỚNG DẪN GIÁO VIÊN ẢO</small><p id="instruction">Cài dây an toàn, chọn D, bật xi nhan và bắt đầu lái xe.</p></div><button id="guideToggle" title="Bật/tắt chỉ dẫn">Hiện hướng dẫn</button></div>
+      <div class="stats"><div><small>Bài hiện tại</small><b id="lessonNumber">01/11</b></div><div><small>Số lỗi</small><b id="errorCount">0</b></div><div><small>Quãng đường</small><b id="distanceText">0 m</b></div><div><small>Kết quả</small><b id="statusText">Đang luyện</b></div></div>
+    </main>
+    <aside class="controls"><div class="controlsTitle"><span>BẢNG ĐIỀU KHIỂN</span><small>VÔ LĂNG · BÀN ĐẠP · CẦN SỐ</small></div>
+      <div class="steeringArea"><div class="wheelHead"><span>VÔ LĂNG</span><small id="steerText">0°</small></div><div class="wheelFrame"><button class="turnBtn" id="leftBtn" aria-label="Đánh lái trái">‹</button><div class="wheel" id="wheel"><div class="wheelSpoke a"></div><div class="wheelSpoke b"></div><div class="wheelSpoke c"></div><div class="wheelCenter">QT</div></div><button class="turnBtn" id="rightBtn" aria-label="Đánh lái phải">›</button></div><div class="steeringHint">← → hoặc A / D để đánh lái</div></div>
+      <div class="groupTitle">HỘP SỐ <small id="transmissionLabel">SỐ TỰ ĐỘNG</small></div><div class="gearButtons" id="gearButtons"></div>
+      <div class="pedals"><button id="brakeBtn" class="pedal brake"><span>▤</span><strong>PHANH</strong><small>SPACE / ↓</small></button><button id="gasBtn" class="pedal gas"><span>▥</span><strong>CHÂN GA</strong><small>↑ / W</small></button></div>
+      <div class="signals"><button id="beltBtn" class="signal"><span>◇</span>Dây an toàn <b id="beltState">CHƯA</b></button><button id="signalLeft" class="signal"><span>◀</span>Xi nhan trái</button><button id="signalRight" class="signal"><span>▶</span>Xi nhan phải</button><button id="hazardBtn" class="signal"><span>⚠</span>Cảnh báo</button></div>
+      <div class="controlActions"><button id="nextBtn" disabled>Tiếp theo →</button><button id="pauseBtn">Tạm dừng Ⅱ</button></div>
+      <div class="controlsNote">Bản mô phỏng độc lập, miễn phí. Điểm số và quỹ đạo chỉ để luyện tập, <b>không phải điểm sát hạch chính thức</b>.</div>
+    </aside>
+  </div>
+  <footer class="foot"><span>© Trung Tâm GDNN Quyết Thắng · <a href="https://daylaixequyetthang.vn" target="_parent">daylaixequyetthang.vn</a></span><span>Hotline / Zalo: <a href="tel:0848751111">084.875.1111</a></span><span>Di chuyển: ↑ ↓ ← → · Ga: W · Phanh: Space · Xi nhan: Q / E · Dây an toàn: B</span></footer>
+</div>
+<script src="./simulator.js" defer></script>
+</body></html>
