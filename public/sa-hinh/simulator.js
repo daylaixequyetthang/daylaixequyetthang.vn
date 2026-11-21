@@ -34,7 +34,7 @@ const maps = [
  route([[0,29],[0,12],[0,-2],[0,-27]],9,{tag:'speed'}),
  route([[0,29],[0,12],[0,-2],[0,-25]],8,{tag:'finish'})
 ];
-const state = {dragSteer:null,cls:'bat',mode:'practice',lesson:0,view:0,guides:true,score:100,elapsed:0,distance:0,errors:[],done:new Set(),gameOver:false,paused:false,finished:false,keys:{},steer:0,car:null,stageElapsed:0,stopped:false,stopChecked:false,reverseUsed:false,maxSpeed:0,shifted:false,edgeActive:false,overSpeed:0,hazard:null,noticeTimer:0,progress:0};
+const state = {dragSteer:null,orbit:{yaw:0.5,distance:17,height:13},cls:'bat',mode:'practice',lesson:0,view:0,guides:true,score:100,elapsed:0,distance:0,errors:[],done:new Set(),gameOver:false,paused:false,finished:false,keys:{},steer:0,car:null,stageElapsed:0,stopped:false,stopChecked:false,reverseUsed:false,maxSpeed:0,shifted:false,edgeActive:false,overSpeed:0,hazard:null,noticeTimer:0,progress:0};
 const classes={bat:{name:'HẠNG B TỰ ĐỘNG',gears:['P','R','N','D'],time:1080,top:24,length:4.4},bmt:{name:'HẠNG B SỐ SÀN',gears:['N','R','1','2'],time:1080,top:24,length:4.4},c1:{name:'HẠNG C1',gears:['N','R','1','2'],time:1200,top:20,length:6.0}};
 const list=()=>state.cls==='c1'?[0,1,2,3,4,5,6,8,9,10]:names.map((_,i)=>i);
 const lessonId=()=>list()[state.lesson];
@@ -80,8 +80,9 @@ function updateUI(){
  $('gearButtons').querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>setGear(b.dataset.gear)));
  $('beltBtn').classList.toggle('on',c.belt);$('beltState').textContent=c.belt?'ĐÃ CÀI':'CHƯA';
  $('signalLeft').classList.toggle('on',c.signal==='left');$('signalRight').classList.toggle('on',c.signal==='right');$('hazardBtn').classList.toggle('on',c.hazard);
- $('viewName').textContent=['3D sau xe','Góc ghế lái','Sơ đồ trên cao'][state.view];
- $('viewLabel').textContent=['GÓC NHÌN SAU XE · CHẠM ◉ ĐỂ ĐỔI','VÔ LĂNG TRÁI · GÓC NHÌN HỌC VIÊN','GÓC NHÌN TRÊN CAO · BẢN ĐỒ'][state.view];
+ $('viewName').textContent=['Sau xe 3D','Trong cabin','Camera 3D xoay','Bản đồ 2D'][state.view];
+ $('viewLabel').textContent=['CAM 1/4 · SAU XE 3D','CAM 2/4 · CABIN TRÁI','CAM 3/4 · KÉO XOAY · ZOOM','CAM 4/4 · BẢN ĐỒ 2D'][state.view];
+ if($('cameraActions')) $('cameraActions').hidden=state.view!==2;
 }
 function setGear(g){if(Math.abs(state.car.speed)>.35){announce('Phải dừng xe trước khi đổi chiều chuyển động.',true);return;}state.car.gear=g;if(g==='2')state.shifted=true;updateUI();}
 function toggleBelt(){state.car.belt=!state.car.belt;updateUI();}
@@ -167,7 +168,30 @@ function roadElevation(y){
  return 0;
 }
 function makeProjection(W,H){
- const c=state.car,inside=state.view===1, f=[Math.sin(c.heading),-Math.cos(c.heading)],r=[Math.cos(c.heading),Math.sin(c.heading)];
+ const c=state.car,inside=state.view===1,orbit=state.view===2;
+ const f=[Math.sin(c.heading),-Math.cos(c.heading)],r=[Math.cos(c.heading),Math.sin(c.heading)];
+ if(orbit){
+   // Actual third-person elevated orbit camera. Yaw is car-relative, so
+   // turning the car keeps the camera attached to the moving vehicle.
+   const o=state.orbit,camHeading=c.heading+o.yaw;
+   const forward=[Math.sin(camHeading),-Math.cos(camHeading)];
+   const right=[Math.cos(camHeading),Math.sin(camHeading)];
+   const target=[c.x+f[0]*2.15,c.y+f[1]*2.15,roadElevation(c.y)+.9];
+   const cx=target[0]-forward[0]*o.distance,cy=target[1]-forward[1]*o.distance;
+   const cz=roadElevation(c.y)+o.height;
+   const pitch=Math.atan2(cz-target[2],o.distance),co=Math.cos(pitch),si=Math.sin(pitch);
+   const focal=W*(W<H?.95:.91),near=.45,horizon=H*.56;
+   const depth=(x,y,z=0)=>((x-cx)*forward[0]+(y-cy)*forward[1])*co-(z-cz)*si;
+   function project(x,y,z=0){
+     const d=depth(x,y,z);if(d<near)return null;
+     const horizontal=(x-cx)*right[0]+(y-cy)*right[1];
+     const vertical=((x-cx)*forward[0]+(y-cy)*forward[1])*si+(z-cz)*co;
+     const scale=focal/(d+.12);
+     return {x:W*.5+horizontal*scale,y:horizon-vertical*scale,depth:d,scale};
+   }
+   project.depth=depth;project.near=near;project.focal=focal;project.horizon=horizon;
+   return project;
+ }
  const behind=inside?1.27:11.2,offset=inside?-.68:0;
  const cx=c.x-f[0]*behind+r[0]*offset,cy=c.y-f[1]*behind+r[1]*offset;
  const cameraZ=roadElevation(c.y)+(inside?1.6:4.2);
@@ -176,8 +200,8 @@ function makeProjection(W,H){
  const depth=(x,y)=>(x-cx)*f[0]+(y-cy)*f[1];
  function project(x,y,z=0){
    const d=depth(x,y);if(d<near-1e-6)return null;
-   const s=focal/(d+1.35);
-   return {x:W*.5+((x-cx)*r[0]+(y-cy)*r[1])*s,y:horizon+(cameraZ-z)*s,depth:d,scale:s};
+   const scale=focal/(d+1.35);
+   return {x:W*.5+((x-cx)*r[0]+(y-cy)*r[1])*scale,y:horizon+(cameraZ-z)*scale,depth:d,scale};
  }
  project.depth=depth;project.near=near;project.focal=focal;project.horizon=horizon;
  return project;
@@ -199,7 +223,7 @@ function polyWorld(P,vertices,fill,stroke,width=1){
    const near=P.near+.01,out=[];
    for(let i=0;i<vertices.length;i++){
      const a=vertices[(i+vertices.length-1)%vertices.length],b=vertices[i];
-     const da=P.depth(a[0],a[1]),db=P.depth(b[0],b[1]);
+     const da=P.depth(...a),db=P.depth(...b);
      const ia=da>=near,ib=db>=near;
      if(ia!==ib){const t=(near-da)/(db-da||1);out.push(a.map((v,j)=>v+(b[j]-v)*t));}
      if(ib)out.push(b);
@@ -211,7 +235,7 @@ function polyWorld(P,vertices,fill,stroke,width=1){
 }
 function worldLine(P,a,b,color,width=2,dash=[]){
  if(P.depth){
-  const near=P.near+.01,da=P.depth(a[0],a[1]),db=P.depth(b[0],b[1]);
+  const near=P.near+.01,da=P.depth(...a),db=P.depth(...b);
   if(da<near&&db<near)return;
   if(da<near||db<near){let t=(near-da)/(db-da||1);const cut=a.map((v,j)=>v+(b[j]-v)*t);if(da<near)a=cut;else b=cut;}
  }
@@ -579,7 +603,11 @@ function drawTopdown(W,H){
  ctx.fillStyle='#fff';ctx.textAlign='center';ctx.font='900 11px system-ui';ctx.fillText('XE',W*.5,H*.56+3);
 }
 function drawScene3D(W,H){
- drawAtmosphere(W,H);
+ if(state.view===2){
+   // Aerial third-person: ground fills the frame, not an artificial sky strip.
+   const earth=ctx.createLinearGradient(0,0,W,H);earth.addColorStop(0,'#7cab8d');earth.addColorStop(1,'#3f7558');
+   ctx.fillStyle=earth;ctx.fillRect(0,0,W,H);
+ }else drawAtmosphere(W,H);
  const P=makeProjection(W,H);
  drawScenery(P);
  drawRoad(P,false);
@@ -590,19 +618,19 @@ function drawScene3D(W,H){
  const haze=ctx.createLinearGradient(0,H*.30,0,H*.62);
  haze.addColorStop(0,'#e4f4ff0c');haze.addColorStop(1,'#ffffff00');ctx.fillStyle=haze;ctx.fillRect(0,H*.30,W,H*.32);
 }
-function render(){const {W,H}=resize();if(W<2||H<2)return;ctx.save();if(state.view===2)drawTopdown(W,H);else drawScene3D(W,H);ctx.restore();}
+function render(){const {W,H}=resize();if(W<2||H<2)return;ctx.save();if(state.view===3)drawTopdown(W,H);else drawScene3D(W,H);ctx.restore();}
 function isPhone(){return window.matchMedia('(max-width: 1024px)').matches;}
 function setDrawer(open){const drawer=$('lessonDrawer'),backdrop=$('drawerBackdrop');if(!drawer||!backdrop)return;drawer.classList.toggle('open',open);backdrop.classList.toggle('show',open);document.body.classList.toggle('drawerOpen',open);}
 function frame(now){const dt=Math.min((now-lastFrame)/1000||0,.05);lastFrame=now;step(dt);render();if(now-displayTick>120){updateStats();displayTick=now;}requestAnimationFrame(frame);}
 function bindHold(id,key){const el=$(id);const on=e=>{if(e)e.preventDefault();state.keys[key]=true;el.classList.add('pressed');};const off=e=>{if(e)e.preventDefault();state.keys[key]=false;el.classList.remove('pressed');};el.addEventListener('pointerdown',e=>{on(e);try{el.setPointerCapture(e.pointerId)}catch(_){}});['pointerup','pointercancel','lostpointercapture'].forEach(event=>el.addEventListener(event,off));}
 bindHold('leftBtn','left');bindHold('rightBtn','right');bindHold('gasBtn','gas');bindHold('brakeBtn','brake');
 const keyMap={ArrowLeft:'left',a:'left',A:'left',ArrowRight:'right',d:'right',D:'right',ArrowUp:'gas',w:'gas',W:'gas',ArrowDown:'brake',' ':'brake',s:'brake',S:'brake'};
-window.addEventListener('keydown',e=>{if(e.key in keyMap){if(e.code!=='Space'&&e.target instanceof HTMLInputElement)return;e.preventDefault();state.keys[keyMap[e.key]]=true;return;}if(e.repeat)return;switch(e.key.toLowerCase()){case 'q':signal('left');break;case 'e':signal('right');break;case 'b':toggleBelt();break;case 'h':hazard();break;case 'v':state.view=(state.view+1)%3;updateUI();break;case 'r':if(Math.abs(state.car.speed)<.35)setGear('R');break;case '1':if(Math.abs(state.car.speed)<.35)setGear('1');break;case '2':if(Math.abs(state.car.speed)<.35)setGear('2');break;}});
+window.addEventListener('keydown',e=>{if(e.key in keyMap){if(e.code!=='Space'&&e.target instanceof HTMLInputElement)return;e.preventDefault();state.keys[keyMap[e.key]]=true;return;}if(e.repeat)return;switch(e.key.toLowerCase()){case 'q':signal('left');break;case 'e':signal('right');break;case 'b':toggleBelt();break;case 'h':hazard();break;case 'v':state.view=(state.view+1)%4;updateUI();break;case 'r':if(Math.abs(state.car.speed)<.35)setGear('R');break;case '1':if(Math.abs(state.car.speed)<.35)setGear('1');break;case '2':if(Math.abs(state.car.speed)<.35)setGear('2');break;}});
 window.addEventListener('keyup',e=>{if(e.key in keyMap){e.preventDefault();state.keys[keyMap[e.key]]=false;}});
 window.addEventListener('blur',()=>{state.keys={};document.querySelectorAll('.pressed').forEach(e=>e.classList.remove('pressed'));});
 $('practiceBtn').addEventListener('click',()=>{setMode('practice');if(isPhone())setDrawer(false);});$('examBtn').addEventListener('click',()=>{setMode('exam');if(isPhone())setDrawer(false);});
 document.querySelectorAll('[data-class]').forEach(b=>b.addEventListener('click',()=>{pickClass(b.dataset.class);if(isPhone())setDrawer(false);}));
-$('viewBtn').addEventListener('click',()=>{state.view=(state.view+1)%3;updateUI();});
+$('viewBtn').addEventListener('click',()=>{state.view=(state.view+1)%4;updateUI();});
 $('restartBtn').addEventListener('click',()=>{if(state.mode==='exam')resetAll();else{state.score=100;state.errors=[];state.distance=0;state.gameOver=false;initCar();}announce('Bài luyện đã khởi động lại.');});
 $('nextBtn').addEventListener('click',nextStage);$('pauseBtn').addEventListener('click',()=>{state.paused=!state.paused;$('pauseBtn').textContent=state.paused?'Tiếp tục ▶':'Tạm dừng Ⅱ';});
 $('guideToggle').addEventListener('click',()=>{state.guides=!state.guides;$('guideToggle').textContent=state.guides?'Ẩn hướng dẫn':'Hiện hướng dẫn';});
@@ -628,7 +656,21 @@ function releaseWheel(){startPoint=null;state.dragSteer=null;}
 for(const event of ['pointerup','pointercancel','lostpointercapture'])steeringWheel.addEventListener(event,releaseWheel);
 window.addEventListener('blur',releaseWheel);
 
+// Elevated 3D third camera: rotate around the same vehicle physics state,
+// zoom with wheel/pinch or accessible buttons. No duplicate vehicle simulation.
+const clampOrbit=()=>{state.orbit.yaw=clamp(state.orbit.yaw,-Math.PI,Math.PI);state.orbit.distance=clamp(state.orbit.distance,7,35);state.orbit.height=clamp(state.orbit.height,4.2,26);};
+const resetOrbit=()=>{state.orbit={yaw:.5,distance:17,height:13};};
+$('orbitReset')?.addEventListener('click',resetOrbit);
+$('orbitIn')?.addEventListener('click',()=>{state.orbit.distance*=.86;state.orbit.height*=.92;clampOrbit();});
+$('orbitOut')?.addEventListener('click',()=>{state.orbit.distance*=1.17;state.orbit.height*=1.1;clampOrbit();});
+const scenePointers=new Map();let sceneDrag=null;
+function pinchDistance(){const points=[...scenePointers.values()];return points.length>=2?Math.hypot(points[0].x-points[1].x,points[0].y-points[1].y):0;}
+canvas.addEventListener('pointerdown',e=>{if(state.view!==2)return;e.preventDefault();scenePointers.set(e.pointerId,{x:e.clientX,y:e.clientY});sceneDrag={id:e.pointerId,x:e.clientX,y:e.clientY,pinch:pinchDistance()};try{canvas.setPointerCapture(e.pointerId);}catch(_){}});
+canvas.addEventListener('pointermove',e=>{if(state.view!==2||!scenePointers.has(e.pointerId))return;e.preventDefault();const old=scenePointers.get(e.pointerId);scenePointers.set(e.pointerId,{x:e.clientX,y:e.clientY});if(scenePointers.size>=2){const d=pinchDistance();if(sceneDrag?.pinch&&d>0){const f=clamp(sceneDrag.pinch/d,.8,1.2);state.orbit.distance*=f;state.orbit.height*=Math.sqrt(f);clampOrbit();}sceneDrag={pinch:d};return;}if(old){state.orbit.yaw+=clamp((e.clientX-old.x)*.011,-.35,.35);state.orbit.height=clamp(state.orbit.height+(e.clientY-old.y)*.045,4.2,26);clampOrbit();}});
+const releaseScene=e=>{scenePointers.delete(e.pointerId);sceneDrag=null;};
+['pointerup','pointercancel','lostpointercapture'].forEach(type=>canvas.addEventListener(type,releaseScene));
+canvas.addEventListener('wheel',e=>{if(state.view!==2)return;e.preventDefault();const f=e.deltaY>0?1.09:.91;state.orbit.distance*=f;state.orbit.height*=Math.sqrt(f);clampOrbit();},{passive:false});
 // For classroom troubleshooting and automated QA, read-only public diagnostics.
-window.QuyetThangSaHinhDebug=Object.freeze({getState:()=>({cls:state.cls,mode:state.mode,lesson:state.lesson,view:state.view,gear:state.car?.gear,belt:state.car?.belt,signal:state.car?.signal,steer:state.steer,score:state.score,errors:state.errors.length,position:state.car?{x:state.car.x,y:state.car.y,heading:state.car.heading,speed:state.car.speed}:null,finished:state.finished}),lessonCount:()=>list().length});
+window.QuyetThangSaHinhDebug=Object.freeze({getState:()=>({cls:state.cls,mode:state.mode,lesson:state.lesson,view:state.view,gear:state.car?.gear,belt:state.car?.belt,signal:state.car?.signal,steer:state.steer,score:state.score,orbit:{...state.orbit},errors:state.errors.length,position:state.car?{x:state.car.x,y:state.car.y,heading:state.car.heading,speed:state.car.speed}:null,finished:state.finished}),lessonCount:()=>list().length});
 resetAll();if(isPhone()){state.view=1;updateUI();}requestAnimationFrame(frame);if(!isPhone())announce('Mời chọn bài, cài dây an toàn và bắt đầu luyện lái.');
 })();
