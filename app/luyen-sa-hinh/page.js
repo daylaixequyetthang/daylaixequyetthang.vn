@@ -6,5 +6,18 @@ export const metadata = {
   alternates: { canonical: 'https://daylaixequyetthang.vn/luyen-sa-hinh' }
 };
 export default function SaHinhPage() {
-  return <><SiteHeader /><main style={{background:'#0b1428',minHeight:'90vh'}}><iframe title="Mô phỏng luyện lái xe sa hình Quyết Thắng" src="/sa-hinh/index.html" style={{display:'block',width:'100%',height:'min(1120px, 100dvh)',minHeight:820,border:0}} allowFullScreen loading="eager" /></main></>;
+  return (
+    <>
+      <SiteHeader />
+      <main style={{ background:'#0b1428', minHeight:'calc(100dvh - 72px)' }}>
+        <iframe
+          title="Mô phỏng luyện lái xe sa hình Quyết Thắng"
+          src="/sa-hinh/index.html"
+          style={{ display:'block', width:'100%', height:'calc(100dvh - 72px)', border:0 }}
+          allowFullScreen
+          loading="eager"
+        />
+      </main>
+    </>
+  );
 }
