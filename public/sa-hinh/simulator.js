@@ -50,13 +50,39 @@ const roundedPath=(points,radius=6,steps=8)=>{
  res.push(points.at(-1));return res;
 };
 for(const map of maps){if(['corner','curve','dat'].includes(map.tag))map.points=roundedPath(map.points,map.tag==='dat'?11:6,8);}
+const routeMeters=points=>points.slice(1).reduce((sum,p,i)=>sum+hypot(p[0]-points[i][0],p[1]-points[i][1]),0);
+// These are illustrated practice courses, not GPS reproductions of public roads.
+const datCourses=[
+ {name:'Giữ làn · đường thẳng',points:[[0,85],[0,30],[0,-120],[0,-260],[0,-480]]},
+ {name:'Quan sát · đường quanh co',points:roundedPath([[0,80],[0,15],[25,-30],[25,-130],[-20,-190],[-20,-280],[0,-360]],11)},
+ {name:'Chuyển hướng · giao lộ',points:roundedPath([[0,75],[0,22],[0,-40],[60,-90],[60,-190],[25,-235],[25,-320]],13)},
+ {name:'Tổng hợp · đường trường',points:maps[11].points}
+];
+datCourses.forEach(course=>{course.distance=routeMeters(course.points);});
 
-const state = {dragSteer:null,steerTarget:0,camera:{yaw:0,distance:17.8,height:10.8},cls:'bat',mode:'practice',lesson:0,view:0,guides:true,score:100,elapsed:0,distance:0,errors:[],done:new Set(),gameOver:false,paused:false,finished:false,keys:{},steer:0,car:null,stageElapsed:0,stopped:false,stopChecked:false,reverseUsed:false,maxSpeed:0,shifted:false,edgeActive:false,overSpeed:0,hazard:null,noticeTimer:0,progress:0};
+const state = {dragSteer:null,steerTarget:0,camera:{yaw:0,distance:17.8,height:10.8},cls:'bat',mode:'practice',lesson:0,view:0,guides:true,score:100,elapsed:0,distance:0,errors:[],done:new Set(),gameOver:false,paused:false,finished:false,keys:{},steer:0,car:null,stageElapsed:0,stopped:false,stopChecked:false,reverseUsed:false,maxSpeed:0,shifted:false,edgeActive:false,overSpeed:0,hazard:null,noticeTimer:0,progress:0,datRoute:3,datHistory:[]};
 const classes={bat:{name:'HẠNG B TỰ ĐỘNG',gears:['P','R','N','D'],time:1080,top:24,length:4.4},bmt:{name:'HẠNG B SỐ SÀN',gears:['N','R','1','2'],time:1080,top:24,length:4.4},c1:{name:'HẠNG C1',gears:['N','R','1','2'],time:1200,top:20,length:6.0}};
 const list=()=>state.mode==='dat'?[11]:(state.cls==='c1'?[0,1,2,3,4,5,6,8,9,10]:names.slice(0,11).map((_,i)=>i));
 const lessonId=()=>list()[state.lesson];
 const lesson=()=>maps[lessonId()];
 const carLength=()=>classes[state.cls].length;
+function applyDatCourse(index){
+ if(!Number.isInteger(index)||index<0||index>=datCourses.length)return;
+ state.datRoute=index;maps[11].points=datCourses[index].points;courseScenery.cache=null;
+ resetAll();announce('Tuyến luyện DAT: '+datCourses[index].name+'. Không tính vào DAT thực tế.');
+}
+function saveDatHistory(){
+ try{window.localStorage?.setItem('qt-dat-practice-history-v1',JSON.stringify(state.datHistory.slice(-20)));}catch(_){}
+}
+function renderDatHistory(){
+ const node=$('datHistory');if(!node)return;
+ node.textContent=state.datHistory.length?state.datHistory.slice(-4).reverse().map(x=>x.date+' · '+x.name+' · '+x.km+' km · '+x.minutes+' phút · '+x.errors+' lỗi').join('\n'):'Chưa có lượt DAT mô phỏng nào hoàn tất.';
+}
+function recordDat(){
+ state.datHistory.push({date:new Date().toLocaleDateString('vi-VN'),name:datCourses[state.datRoute].name,km:(state.distance/1000).toFixed(2),minutes:(state.elapsed/60).toFixed(1),errors:state.errors.length});
+ saveDatHistory();renderDatHistory();
+}
+
 let lastFrame=0, displayTick=0;
 function announce(msg, warning=false) {
  const el=$('notice');el.textContent=msg;el.className='screenNotice visible'+(warning?' warning':'');
@@ -79,7 +105,7 @@ function initCar() {
 }
 function resetAll(){state.score=100;state.elapsed=0;state.distance=0;state.errors=[];state.done.clear();state.gameOver=false;state.lesson=0;state.paused=false;state.hazard=null;initCar();renderList();}
 function pickClass(cls){state.cls=cls;document.querySelectorAll('[data-class]').forEach(b=>b.classList.toggle('active',b.dataset.class===cls));resetAll();}
-function setMode(mode){state.mode=mode;state.guides=mode!=='exam';$('practiceBtn').classList.toggle('chosen',mode==='practice');$('examBtn').classList.toggle('chosen',mode==='exam');$('datBtn')?.classList.toggle('chosen',mode==='dat');resetAll();announce(mode==='exam'?'Thi thử theo chuỗi bài; điểm số chỉ mang tính tham khảo.':mode==='dat'?'Tuyến đường trường minh họa: không ghi nhận km DAT thực tế.':'Chế độ luyện tập: làm từng bài, có hướng dẫn.');}
+function setMode(mode){state.mode=mode;state.guides=mode!=='exam';$('practiceBtn').classList.toggle('chosen',mode==='practice');$('examBtn').classList.toggle('chosen',mode==='exam');$('datBtn')?.classList.toggle('chosen',mode==='dat');if($('datRoutePanel'))$('datRoutePanel').hidden=mode!=='dat';resetAll();announce(mode==='exam'?'Thi thử theo chuỗi bài; điểm số chỉ mang tính tham khảo.':mode==='dat'?'Chọn một tuyến DAT hoặc nhập GPX. Km mô phỏng không ghi nhận DAT thực tế.':'Chế độ luyện tập: làm từng bài, có hướng dẫn.');}
 function selectLesson(index){if(state.mode==='exam'){announce('Chế độ thi theo chuỗi bài: hoàn thành lần lượt từng bài.',true);return;}state.lesson=index;state.gameOver=false;initCar();renderList();}
 function nextStage(){if(!state.finished && state.mode==='exam')return;if(state.lesson<list().length-1){state.lesson++;initCar();renderList();announce('Chuyển sang bài '+String(state.lesson+1).padStart(2,'0'));}else{state.gameOver=true;announce(`Hoàn tất! Kết quả mô phỏng: ${state.score}/100 điểm.`);}}
 function renderList(){
@@ -90,7 +116,7 @@ function renderList(){
 function updateUI(){
  const id=lessonId(),n=list().length,c=state.car;
  $('breadcrumb').textContent=`BÀI ${String(state.lesson+1).padStart(2,'0')} / ${n} · ${classes[state.cls].name}`;
- $('lessonTitle').textContent=names[id][0];$('lessonDesc').textContent=names[id][1];
+ $('lessonTitle').textContent=state.mode==='dat'?datCourses[state.datRoute].name:names[id][0];$('lessonDesc').textContent=names[id][1];
  $('lessonNumber').textContent=`${String(state.lesson+1).padStart(2,'0')}/${n}`;
  $('gearDisplay').textContent=c.gear;$('transmissionLabel').textContent=state.cls==='bat'?'SỐ TỰ ĐỘNG':'SỐ CƠ KHÍ';
  $('gearButtons').innerHTML=classes[state.cls].gears.map(g=>`<button type="button" data-gear="${g}" class="${g===c.gear?'selected':''}">${g}</button>`).join('');
@@ -131,7 +157,7 @@ function checkRules(dt) {
  state.maxSpeed=Math.max(state.maxSpeed,sp);
  const off=roadDistance() > l.width/2+0.2;
  if(off && !state.edgeActive && state.stageElapsed>1.1){penalty('Bánh xe ra ngoài đường giới hạn',5);state.edgeActive=true;}else if(!off)state.edgeActive=false;
- if(sp>classes[state.cls].top){state.overSpeed+=dt;if(state.overSpeed>3){penalty('Vượt tốc độ giới hạn trong sân',1);state.overSpeed=0;}}else state.overSpeed=0;
+ if(sp>(state.mode==='dat'?48:classes[state.cls].top)){state.overSpeed+=dt;if(state.overSpeed>3){penalty('Vượt tốc độ giới hạn trong sân',1);state.overSpeed=0;}}else state.overSpeed=0;
  if(state.hazard && !state.hazard.closed){const hz=state.hazard;
    hz.t+=dt;
    if(sp<1 && !hz.braked){hz.braked=true;if(hz.t>3)penalty('Phanh chậm trong tình huống bất ngờ',10);}
@@ -140,7 +166,8 @@ function checkRules(dt) {
  }
  const p=l.points,goal=l.park||{x:p.at(-1)[0],y:p.at(-1)[1]};
  const arrive=l.park?carInsideBay(c,l.park):hypot(c.x-goal.x,c.y-goal.y)<4.4;
- if(arrive && !state.finished && state.stageElapsed>3){
+ const reached=state.mode==='dat'?arrive&&state.distance>datCourses[state.datRoute].distance*.65:arrive;
+ if(reached && !state.finished && state.stageElapsed>3){
    if(l.park && (!state.reverseUsed||sp>3)){if(!state.warnedPark){announce('Hãy lùi xe bằng số R và dừng trọn thân xe trong ô đỗ.',true);state.warnedPark=true;}return;}
    if(id===9 && state.cls!=='bat' && !state.shifted){if(!state.warnedShift){announce('Cần chuyển sang số 2 trong bài thay đổi số.',true);state.warnedShift=true;}return;}
    if(id===9 && state.maxSpeed<12){if(!state.warnedSpeed){announce('Tăng tốc có kiểm soát trước khi kết thúc bài.',true);state.warnedSpeed=true;}return;}
@@ -148,7 +175,7 @@ function checkRules(dt) {
    finishStage();
  }
 }
-function finishStage(){if(state.finished)return;state.finished=true;state.done.add(state.lesson);$('nextBtn').disabled=false;renderList();announce(`Hoàn thành bài ${state.lesson+1}! Điểm hiện tại: ${state.score}/100.`);if(state.mode==='exam'){setTimeout(()=>{if(state.finished&&!state.gameOver)nextStage();},1700);} }
+function finishStage(){if(state.finished)return;state.finished=true;if(state.mode==='dat')recordDat();state.done.add(state.lesson);$('nextBtn').disabled=false;renderList();announce(`Hoàn thành bài ${state.lesson+1}! Điểm hiện tại: ${state.score}/100.`);if(state.mode==='exam'){setTimeout(()=>{if(state.finished&&!state.gameOver)nextStage();},1700);} }
 function step(dt){
  if(state.paused||state.finished||state.gameOver)return;
  state.elapsed+=dt;state.stageElapsed+=dt;
@@ -157,7 +184,7 @@ function step(dt){
  if(direction)state.steerTarget=clamp(state.steerTarget+direction*dt*.38,-1,1);
  state.steer+=(state.steerTarget-state.steer)*Math.min(1,dt*2.4);
  let target=0;
- if(c.gear==='D'||c.gear==='1'||c.gear==='2')target=gas?6.7:0;
+ if(c.gear==='D'||c.gear==='1'||c.gear==='2')target=gas?(state.mode==='dat'?11:6.7):0;
  if(c.gear==='R')target=gas?-3:0;
  if(brake){const sign=Math.sign(c.speed);c.speed=sign*Math.max(0,Math.abs(c.speed)-dt*8);}
  else{const d=target-c.speed;const power=gas?2.8:1.25;c.speed+=clamp(d,-power*dt,power*dt);if(Math.abs(c.speed)<.014)c.speed=0;}
@@ -173,7 +200,7 @@ function step(dt){
 }
 function guideMessage(){const c=state.car,l=lesson(),id=lessonId();if(state.finished)return 'Tốt! Bạn đã hoàn thành bài. Nhấn “Tiếp theo” để chuyển bài.';if(state.gameOver)return 'Kết thúc lượt. Chọn “Làm lại” để bắt đầu lượt mới.';if(!c.belt)return 'Bước 1: Cài dây an toàn trước khi bắt đầu.';if(c.gear==='P'||c.gear==='N')return 'Bước 2: Chọn D / số 1 để tiến, R để lùi. Sử dụng W hoặc ↑ để tăng ga.';if(state.hazard && !state.hazard.closed)return '⚠ Tình huống bất ngờ: phanh dừng xe ngay và bật đèn cảnh báo!';if(state.hazard && state.hazard.closed && c.hazard)return 'Tình huống đã hết. Tắt cảnh báo nguy hiểm trước khi lái tiếp.';if(id===11)return 'Luyện giữ làn, quan sát và điều tốc. Đây là mô phỏng, không ghi nhận quãng đường DAT thực tế.';if(id===0&&!state.startSignalChecked)return 'Bật xi nhan trái (Q), giữ chân ga và lái qua vạch xuất phát.';if(l.stop!==undefined&&!state.stopped)return `Đi chậm tới vạch dừng: y ≈ ${l.stop} m trên bản đồ; nhấn Space để dừng.`;if(id===4)return currentTrafficGreen()?'Đèn xanh: quan sát và lái xe qua ngã tư.':'Đèn đỏ: phanh dừng xe trước vạch.';if(l.park)return 'Lái vượt ô đỗ, chọn R và đánh lái từ từ để lùi gọn xe vào ô được tô xanh.';if(id===9)return state.cls==='bat'?'Tăng ga lên khoảng 12 km/h rồi giảm tốc trước điểm kết thúc.':'Tăng ga, dừng xe chuyển từ số 1 sang 2, rồi tới đích.';if(id===10)return 'Bật xi nhan phải (E), giữ hướng xe và đi qua vạch kết thúc.';return names[id][1]+' Lái theo đường trắng; dùng phanh để giữ tốc độ an toàn.';}
 function status(){const c=state.car;if(state.gameOver)return 'KẾT THÚC LƯỢT';if(state.finished)return 'ĐÃ HOÀN THÀNH';if(state.paused)return 'ĐANG TẠM DỪNG';if(Math.abs(c.speed)<.1)return 'SẴN SÀNG TẬP LÁI';return 'XE ĐANG DI CHUYỂN';}
-function updateStats(){const c=state.car;$('speedText').innerHTML=String(Math.round(Math.abs(c.speed)*3.6)).padStart(2,'0')+'<small> km/h</small>';$('scoreText').textContent=state.score;$('clockText').textContent=String(Math.floor(state.elapsed/60)).padStart(2,'0')+':'+String(Math.floor(state.elapsed%60)).padStart(2,'0');$('distanceText').textContent=Math.round(state.distance)+' m';$('errorCount').textContent=state.errors.length;$('steerText').textContent=(state.steer>0.015?'↱ ':state.steer<-.015?'↰ ':'')+Math.round(Math.abs(state.steer*540))+'°';$('wheel').setAttribute('aria-valuenow',String(Math.round(state.steer*100)));$('wheel').style.transform=`rotate(${state.steer*540}deg)`;$('statusText').textContent=state.gameOver?(state.score>=80?'Hoàn tất':'Chưa đạt'):state.finished?'Đã hoàn thành':'Đang luyện';$('systemStatus').textContent=status();$('instruction').textContent=state.guides?guideMessage():'Hướng dẫn đang tắt. Nhấn “Hiện hướng dẫn” để bật lại.';if($('compactGuideText'))$('compactGuideText').textContent=state.guides?guideMessage():'Đã tắt hướng dẫn (bấm ✦ để bật).';}
+function updateStats(){const c=state.car;$('speedText').innerHTML=String(Math.round(Math.abs(c.speed)*3.6)).padStart(2,'0')+'<small> km/h</small>';$('scoreText').textContent=state.score;$('clockText').textContent=String(Math.floor(state.elapsed/60)).padStart(2,'0')+':'+String(Math.floor(state.elapsed%60)).padStart(2,'0');$('distanceText').textContent=Math.round(state.distance)+' m';$('errorCount').textContent=state.errors.length;$('steerText').textContent=(state.steer>0.015?'↱ ':state.steer<-.015?'↰ ':'')+Math.round(Math.abs(state.steer*540))+'°';$('wheel').setAttribute('aria-valuenow',String(Math.round(state.steer*100)));$('wheel').style.transform=`rotate(${state.steer*540}deg)`;if($('datProgress'))$('datProgress').textContent='Luyện mô phỏng '+(state.distance/1000).toFixed(2)+' km · tuyến '+(datCourses[state.datRoute].distance/1000).toFixed(2)+' km';$('statusText').textContent=state.gameOver?(state.score>=80?'Hoàn tất':'Chưa đạt'):state.finished?'Đã hoàn thành':'Đang luyện';$('systemStatus').textContent=status();$('instruction').textContent=state.guides?guideMessage():'Hướng dẫn đang tắt. Nhấn “Hiện hướng dẫn” để bật lại.';if($('compactGuideText'))$('compactGuideText').textContent=state.guides?guideMessage():'Đã tắt hướng dẫn (bấm ✦ để bật).';}
 // ----------------------------------------------------------------------
 // QUYET THANG V4 — procedural perspective 3D learning environment.
 // World-space objects are projected against the same car position, heading
