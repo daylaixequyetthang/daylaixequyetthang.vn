@@ -612,6 +612,7 @@ function drawTopdown(W,H){
  ctx.strokeStyle='#ffffff12';ctx.lineWidth=1;
  for(let x=-100;x<=100;x+=5){line(P(x,-100),P(x,100),'#effff010',1);line(P(-100,x),P(100,x),'#effff010',1);}
  drawRoad(P,true);
+ drawSteeringGuide(P,true);
  const f=[Math.sin(c.heading),-Math.cos(c.heading)],r=[Math.cos(c.heading),Math.sin(c.heading)],L=carLength(),width=state.cls==='c1'?2.3:1.95;
  const at=(forward,side)=>P(c.x+f[0]*forward+r[0]*side,c.y+f[1]*forward+r[1]*side,0);
  drawPolygon([at(-L*.5,-width*.5),at(-L*.5,width*.5),at(L*.5,width*.5),at(L*.5,-width*.5)],'#f4fbff','#367bd5',2);
@@ -619,11 +620,32 @@ function drawTopdown(W,H){
  drawPolygon([at(L*.5,-width*.34),at(L*.5,width*.34),at(L*.66,0)],'#5aefe0');
  ctx.fillStyle='#fff';ctx.textAlign='center';ctx.font='900 11px system-ui';ctx.fillText('XE',W*.5,H*.56+3);
 }
+// Predict the next few metres of vehicle motion from the same bicycle model used by physics.
+// Hidden during the exam mode; this line is a learning aid, not an official wheel track.
+function drawSteeringGuide(P,mapView=false){
+ if(!state.guides||state.finished||state.gameOver||!state.car)return;
+ const c=state.car,wb=state.cls==='c1'?3.6:2.65;
+ const radiusCurve=Math.tan(state.steer*.56)/wb*(c.gear==='R'?-1:1);
+ let x=c.x,y=c.y,a=c.heading,prev=null;
+ for(let i=0;i<34;i++){
+  const old=[x,y,roadElevation(y)+.15];
+  a+=radiusCurve*.48;
+  const driveSign=c.gear==='R'?-1:1;
+  x+=Math.sin(a)*.48*driveSign;y-=Math.cos(a)*.48*driveSign;
+  const next=[x,y,roadElevation(y)+.15];
+  if(i>2 && i%2===0){
+   if(mapView)line(P(...old),P(...next),'#51e6ed',2.1);
+   else worldLine(P,old,next,'#3fffe8',2.5);
+  }
+  prev=next;
+ }
+}
 function drawScene3D(W,H){
  drawAtmosphere(W,H);
  const P=makeProjection(W,H);
  drawScenery(P);
  drawRoad(P,false);
+ drawSteeringGuide(P,false);
  drawBoundaryPosts(P);
  drawCourseObjects(P);
  if(state.view===1)drawCockpit(W,H);else drawCarWorld(P);
