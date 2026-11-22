@@ -99,6 +99,7 @@ function updateUI(){
  $('signalLeft').classList.toggle('on',c.signal==='left');$('signalRight').classList.toggle('on',c.signal==='right');$('hazardBtn').classList.toggle('on',c.hazard);
  $('viewName').textContent=['3D sau xe','Góc ghế lái','Sơ đồ trên cao'][state.view];
  $('viewLabel').textContent=['GÓC NHÌN SAU XE · CHẠM ◉ ĐỂ ĐỔI','VÔ LĂNG TRÁI · GÓC NHÌN HỌC VIÊN','GÓC NHÌN TRÊN CAO · BẢN ĐỒ'][state.view];
+ document.body.classList.toggle('orbitView',state.view===0);
 }
 function setGear(g){if(Math.abs(state.car.speed)>.35){announce('Phải dừng xe trước khi đổi chiều chuyển động.',true);return;}state.car.gear=g;if(g==='2')state.shifted=true;updateUI();}
 function toggleBelt(){state.car.belt=!state.car.belt;updateUI();}
