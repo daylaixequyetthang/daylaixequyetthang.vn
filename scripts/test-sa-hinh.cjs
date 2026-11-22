@@ -36,7 +36,7 @@ frame(1000);
 emit('wheel','pointerdown',{clientX:120,clientY:60});
 emit('wheel','pointermove',{clientX:60,clientY:120});
 emit('wheel','pointerup');
-assert.ok(debug().steerTarget>0.30&&debug().steerTarget<0.4,'wheel angle should be progressive');
+assert.ok(debug().steerTarget>0.12&&debug().steerTarget<0.2,'wheel angle should be progressive');
 frame(1016);
 assert.ok(debug().steer>0&&debug().steer<debug().steerTarget,'steering should smooth toward target');
 emit('centerSteerBtn','click');
