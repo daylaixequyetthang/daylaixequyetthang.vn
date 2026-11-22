@@ -9,6 +9,21 @@
       <div class="sideHeading"><span>CHƯƠNG TRÌNH</span><span id="lessonCount">11 bài</span></div>
       <div class="tabs" role="group" aria-label="Chọn hạng xe"><button data-class="bat" class="active">B Tự động</button><button data-class="bmt">B Số sàn</button><button data-class="c1">C1</button></div>
       <div class="modeGroup" role="group" aria-label="Chọn chế độ"><button id="practiceBtn" class="chosen">▣ Luyện tập</button><button id="examBtn">◷ Thi liên hoàn</button><button id="datBtn">▰ DAT mô phỏng</button></div>
+<section id="datRoutePanel" class="datRoutePanel" hidden aria-label="Các tuyến luyện đường trường DAT mô phỏng">
+<label for="datRouteSelect">CHỌN TUYẾN DAT MÔ PHỎNG</label>
+<select id="datRouteSelect" aria-label="Chọn tuyến đường trường">
+<option value="0">01 · Giữ làn - đường thẳng</option>
+<option value="1">02 · Quan sát - quanh co</option>
+<option value="2">03 · Chuyển hướng - giao lộ</option>
+<option value="3" selected>04 · Tổng hợp - đường trường</option>
+</select>
+<label class="datGpxLabel" for="datGpxFile">Nhập GPX tuyến riêng (tham khảo)</label>
+<input id="datGpxFile" type="file" accept=".gpx,application/gpx+xml,application/xml,text/xml" aria-label="Chọn tệp GPX để mô phỏng tuyến đường trường" />
+<p id="datProgress">Luyện mô phỏng 0.00 km</p>
+<div class="datHistoryTitle">NHẬT KÝ LUYỆN TẬP TRÊN MÁY NÀY</div>
+<div id="datHistory" class="datHistory" aria-live="polite">Chưa có lượt DAT mô phỏng nào hoàn tất.</div>
+<small class="datWarning">Các quãng đường và nhật ký tại đây không được ghi nhận bởi thiết bị DAT trên xe thật.</small>
+</section>
       <div class="sectionLabel">DANH SÁCH BÀI TẬP <span id="progressCount">0 / 11</span></div>
       <div id="lessonList" class="lessonList"></div>
       <div class="sidebarFoot"><span>◎ Học từng bài, tự kiểm tra thao tác</span><a href="/thi-thu" target="_parent">Ôn tập lý thuyết 600 câu ↗</a></div>
