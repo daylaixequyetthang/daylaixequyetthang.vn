@@ -194,11 +194,18 @@ function roadElevation(y){
  return 0;
 }
 function makeProjection(W,H){
- const c=state.car,inside=state.view===1, f=[Math.sin(c.heading),-Math.cos(c.heading)],r=[Math.cos(c.heading),Math.sin(c.heading)];
- const behind=inside?1.27:11.2,offset=inside?-.68:0;
- const cx=c.x-f[0]*behind+r[0]*offset,cy=c.y-f[1]*behind+r[1]*offset;
- const cameraZ=roadElevation(c.y)+(inside?1.6:4.2);
- const focal=W*(inside?.87:.81),horizon=H*(inside?.405:.38);
+ const c=state.car,inside=state.view===1,fcar=[Math.sin(c.heading),-Math.cos(c.heading)],rcar=[Math.cos(c.heading),Math.sin(c.heading)];
+ let f=fcar,r=rcar,cx,cy;
+ if(inside){cx=c.x-fcar[0]*1.27-rcar[0]*.68;cy=c.y-fcar[1]*1.27-rcar[1]*.68;}
+ else{
+  const cam=state.camera,dist=cam.distance,yaw=cam.yaw;
+  cx=c.x-fcar[0]*Math.cos(yaw)*dist+rcar[0]*Math.sin(yaw)*dist;
+  cy=c.y-fcar[1]*Math.cos(yaw)*dist+rcar[1]*Math.sin(yaw)*dist;
+  const aimX=c.x+fcar[0]*6,aimY=c.y+fcar[1]*6,mag=hypot(aimX-cx,aimY-cy)||1;
+  f=[(aimX-cx)/mag,(aimY-cy)/mag];r=[-f[1],f[0]];
+ }
+ const cameraZ=roadElevation(c.y)+(inside?1.6:state.camera.height);
+ const focal=W*(inside?.87:.81),horizon=H*(inside?.405:.32);
  const near=.78;
  const depth=(x,y)=>(x-cx)*f[0]+(y-cy)*f[1];
  function project(x,y,z=0){
@@ -365,6 +372,7 @@ function roadSegment(P,a,b,width,i){
     // narrow reflective paint glow outlines the real road boundary, not a fictitious lane centre.
     worldLine(P,edge(a,side*.985),edge(b,side*.985),'#fff9dd36',.8);
  }
+ if(lesson().tag==='dat'&&i%4<2){worldLine(P,[a[0],a[1],bottom(a[1])+.06],[b[0],b[1],bottom(b[1])+.06],'#edf1ef',1.6);}
  if(i%3===0){
    const mid=[(a[0]+b[0])/2,(a[1]+b[1])/2];
    for(const v of [-1.8,1.3]){
@@ -483,6 +491,7 @@ function drawCourseObjects(P){
  const origin=p[0],next=p[1],dx=next[0]-origin[0],dy=next[1]-origin[1],len=hypot(dx,dy)||1,n=[-dy/len,dx/len];
  const sx=origin[0]+dx*.30+n[0]*(l.width*.5+3.5),sy=origin[1]+dy*.30+n[1]*(l.width*.5+3.5);
  signboard(P,sx,sy,'BÀI '+String(lessonId()+1).padStart(2,'0'),names[lessonId()][2].toUpperCase());
+ if(tag==='dat')signboard(P,l.width*.5+3,40,'ĐƯỜNG TRƯỜNG','DAT MÔ PHỎNG', '#176b8a');
  if(tag==='walk')signboard(P,l.width*.5+3,1.5,'NGƯỜI ĐI BỘ','QUAN SÁT', '#176b8a');
  if(tag==='hill')signboard(P,l.width*.5+2.8,6,'DỐC CẦU','DỪNG ĐÚNG VẠCH','#996524');
  if(tag==='light')trafficSignal(P,l.width*.5+2.5,6.3);
@@ -627,7 +636,7 @@ const keyMap={ArrowLeft:'left',a:'left',A:'left',ArrowRight:'right',d:'right',D:
 window.addEventListener('keydown',e=>{if(e.key in keyMap){if(e.code!=='Space'&&e.target instanceof HTMLInputElement)return;e.preventDefault();state.keys[keyMap[e.key]]=true;return;}if(e.repeat)return;switch(e.key.toLowerCase()){case 'q':signal('left');break;case 'e':signal('right');break;case 'b':toggleBelt();break;case 'h':hazard();break;case 'v':state.view=(state.view+1)%3;updateUI();break;case 'r':if(Math.abs(state.car.speed)<.35)setGear('R');break;case '1':if(Math.abs(state.car.speed)<.35)setGear('1');break;case '2':if(Math.abs(state.car.speed)<.35)setGear('2');break;}});
 window.addEventListener('keyup',e=>{if(e.key in keyMap){e.preventDefault();state.keys[keyMap[e.key]]=false;}});
 window.addEventListener('blur',()=>{state.keys={};document.querySelectorAll('.pressed').forEach(e=>e.classList.remove('pressed'));});
-$('practiceBtn').addEventListener('click',()=>{setMode('practice');if(isPhone())setDrawer(false);});$('examBtn').addEventListener('click',()=>{setMode('exam');if(isPhone())setDrawer(false);});
+$('practiceBtn').addEventListener('click',()=>{setMode('practice');if(isPhone())setDrawer(false);});$('examBtn').addEventListener('click',()=>{setMode('exam');if(isPhone())setDrawer(false);});$('datBtn')?.addEventListener('click',()=>{setMode('dat');if(isPhone())setDrawer(false);});
 document.querySelectorAll('[data-class]').forEach(b=>b.addEventListener('click',()=>{pickClass(b.dataset.class);if(isPhone())setDrawer(false);}));
 $('viewBtn').addEventListener('click',()=>{state.view=(state.view+1)%3;updateUI();});
 $('restartBtn').addEventListener('click',()=>{if(state.mode==='exam')resetAll();else{state.score=100;state.errors=[];state.distance=0;state.gameOver=false;initCar();}announce('Bài luyện đã khởi động lại.');});
@@ -657,5 +666,5 @@ window.addEventListener('blur',releaseWheel);
 
 // For classroom troubleshooting and automated QA, read-only public diagnostics.
 window.QuyetThangSaHinhDebug=Object.freeze({getState:()=>({cls:state.cls,mode:state.mode,lesson:state.lesson,view:state.view,gear:state.car?.gear,belt:state.car?.belt,signal:state.car?.signal,steer:state.steer,score:state.score,errors:state.errors.length,position:state.car?{x:state.car.x,y:state.car.y,heading:state.car.heading,speed:state.car.speed}:null,finished:state.finished}),lessonCount:()=>list().length});
-resetAll();if(isPhone()){state.view=1;updateUI();}requestAnimationFrame(frame);if(!isPhone())announce('Mời chọn bài, cài dây an toàn và bắt đầu luyện lái.');
+resetAll();if(isPhone()){state.view=0;updateUI();}requestAnimationFrame(frame);if(!isPhone())announce('Mời chọn bài, cài dây an toàn và bắt đầu luyện lái.');
 })();
