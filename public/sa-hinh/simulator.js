@@ -206,13 +206,17 @@ function makeProjection(W,H){
   f=[(aimX-cx)/mag,(aimY-cy)/mag];r=[-f[1],f[0]];
  }
  const cameraZ=roadElevation(c.y)+(inside?1.6:state.camera.height);
- const focal=W*(inside?.87:.81),horizon=H*(inside?.405:.32);
- const near=.78;
+ const focal=W*(inside?.87:.81),horizon=H*(inside?.405:.51);
+ const near=.78,pitch=inside?0:Math.atan2(Math.max(.6,state.camera.height-.9),state.camera.distance+7);
+ const cp=Math.cos(pitch),sp=Math.sin(pitch);
  const depth=(x,y)=>(x-cx)*f[0]+(y-cy)*f[1];
  function project(x,y,z=0){
    const d=depth(x,y);if(d<near-1e-6)return null;
-   const s=focal/(d+1.35);
-   return {x:W*.5+((x-cx)*r[0]+(y-cy)*r[1])*s,y:horizon+(cameraZ-z)*s,depth:d,scale:s};
+   const dz=cameraZ-z,viewDepth=inside?d+1.35:d*cp+dz*sp+1.35;
+   if(viewDepth<near)return null;
+   const scale=focal/viewDepth;
+   const vertical=inside?dz:dz*cp-d*sp;
+   return {x:W*.5+((x-cx)*r[0]+(y-cy)*r[1])*scale,y:horizon+vertical*scale,depth:d,scale};
  }
  project.depth=depth;project.near=near;project.focal=focal;project.horizon=horizon;
  return project;
