@@ -11,14 +11,15 @@ Main/production vẫn giữ V4 cho đến khi xác nhận nghiệm thu.
 - Giảm chạm giữ dẫn đến chọn/copy text trên mobile. Giữ nguyên bố cục cockpit với đường, lái, số, chân ga và phanh trong cùng màn hình.
 - Đường vòng quanh co, góc vuông và tuyến DAT demo tạo đường cong nội suy thay vì nối vuông góc bằng những đoạn thẳng cứng.
 - Ghép xe chỉ hoàn thành khi tất cả bốn góc thân xe nằm trong ô đỗ, có thực hiện số lùi.
-- Giữ riêng 11 bài luyện hạng B và 10 bài hạng C1. Chế độ DAT demo có một đường minh họa riêng, KHÔNG được thêm vào chuỗi bài sát hạch.
+- Giữ riêng 11 bài luyện hạng B và 10 bài hạng C1. Chế độ DAT demo có **4 tuyến minh họa theo kỹ năng** (giữ làn, quan sát cua, chuyển hướng, tổng hợp) và tùy chọn **nhập GPX**, KHÔNG được thêm vào chuỗi bài sát hạch. 
+- DAT có thống kê km/thời gian/lỗi theo phiên, nhật ký hoàn tất được giữ cục bộ trên chính trình duyệt (localStorage); không đồng bộ CRM, giáo viên hay thiết bị DAT.
 - Thay icon QT tự vẽ bằng ảnh logo hiện có của website (`/logo.png`).
 
 ## Giới hạn quan trọng
 
 - V5 là Canvas 2D có phép chiếu phối cảnh; chưa phải mô hình 3D vật lý chính xác như xe thật.
 - Quỹ đạo, kích thước sân, cọc, biển báo và chấm điểm cần đối chiếu hồ sơ sân thực tế và quy định đang áp dụng trước khi phát hành chính thức. Tuyệt đối không công bố là sơ đồ sân Quyết Thắng chính xác.
-- Chế độ DAT là bản chạy minh họa ngắn (không dùng GPS, không có dữ liệu giáo viên, chưa tích hợp thiết bị DAT); **không cộng quãng đường vào DAT chính thức**.
+- Chế độ DAT có 4 tuyến minh họa và nhập file GPX (dựng tuyến hình học xấp xỉ từ tọa độ, không có bản đồ giao thông thực tế, biển báo ngoài đời hay mô phỏng GPS trực tiếp). Không có dữ liệu giáo viên/thiết bị DAT; **không cộng quãng đường vào DAT chính thức**.
 - Góc camera tự do và tương tác mobile cần test trên iPhone Safari và Android Chrome thật.
 
 ## Kiểm thử trước khi merge
