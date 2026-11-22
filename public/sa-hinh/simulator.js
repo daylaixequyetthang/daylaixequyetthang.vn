@@ -699,6 +699,6 @@ for(const event of ['pointerup','pointercancel','lostpointercapture'])steeringWh
 window.addEventListener('blur',releaseWheel);
 
 // For classroom troubleshooting and automated QA, read-only public diagnostics.
-window.QuyetThangSaHinhDebug=Object.freeze({getState:()=>({cls:state.cls,mode:state.mode,lesson:state.lesson,view:state.view,gear:state.car?.gear,belt:state.car?.belt,signal:state.car?.signal,steer:state.steer,score:state.score,errors:state.errors.length,position:state.car?{x:state.car.x,y:state.car.y,heading:state.car.heading,speed:state.car.speed}:null,finished:state.finished}),lessonCount:()=>list().length});
+window.QuyetThangSaHinhDebug=Object.freeze({getState:()=>({cls:state.cls,mode:state.mode,lesson:state.lesson,view:state.view,gear:state.car?.gear,belt:state.car?.belt,signal:state.car?.signal,steer:state.steer,steerTarget:state.steerTarget,camera:{...state.camera},score:state.score,errors:state.errors.length,position:state.car?{x:state.car.x,y:state.car.y,heading:state.car.heading,speed:state.car.speed}:null,finished:state.finished}),lessonCount:()=>list().length});
 resetAll();if(isPhone()){state.view=0;updateUI();}requestAnimationFrame(frame);if(!isPhone())announce('Mời chọn bài, cài dây an toàn và bắt đầu luyện lái.');
 })();
