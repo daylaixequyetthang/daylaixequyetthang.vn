@@ -151,3 +151,14 @@ body.orbitView .cameraTools{display:flex}
  .cameraTools{top:7px;right:6px}
  .cameraTools button{width:24px;height:24px;font-size:15px}
 }
+/* Practice-only DAT route selection and local history. */
+.datRoutePanel[hidden]{display:none!important}
+.datRoutePanel{display:flex;flex-direction:column;gap:8px;margin:0 0 14px;padding:12px;border:1px solid #2f5f7d;border-radius:12px;background:#0d2d39;color:#d8e9f8}
+.datRoutePanel label,.datHistoryTitle{font-size:10px;letter-spacing:.4px;font-weight:850}
+.datRoutePanel select,.datRoutePanel input{box-sizing:border-box;width:100%;max-width:100%;min-width:0;border:1px solid #49728c;border-radius:8px;padding:8px;background:#0e2338;color:#eef8ff;font-size:11px}
+.datRoutePanel input{padding:5px;font-size:10px}
+.datRoutePanel .datGpxLabel{color:#b9daf8;margin-top:4px}
+.datRoutePanel #datProgress{margin:3px 0;color:#7fe2c9;font-size:11px;font-weight:800}
+.datHistory{font-size:10px;color:#b4cbde;white-space:pre-line;line-height:1.5;max-height:125px;overflow-y:auto}
+.datWarning{font-size:9px;line-height:1.4;color:#ffc78e}
+@media(max-width:1024px){.datRoutePanel{margin:0 0 10px;padding:10px}.datRoutePanel select,.datRoutePanel input{min-height:36px}}
