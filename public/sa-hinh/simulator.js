@@ -656,6 +656,31 @@ $('fullscreenBtn')?.addEventListener('click',async()=>{
 });
 document.addEventListener('fullscreenchange',()=>{$('fullscreenBtn').textContent=document.fullscreenElement?'⛶ Thoát':'⛶';});
 $('compactGuideToggle')?.addEventListener('click',()=>{const hidden=document.body.classList.toggle('guideCompactHidden');$('compactGuideToggle').textContent=hidden?'✦ Hiện hướng dẫn':'×';});
+$('centerSteerBtn')?.addEventListener('click',()=>{state.steerTarget=0;announce('Đang trả lái về thẳng.');});
+function resetCamera(){state.camera={yaw:0,distance:17.8,height:10.8};}
+$('cameraResetBtn')?.addEventListener('click',()=>{resetCamera();announce('Đã đặt lại góc camera.');});
+$('cameraPlusBtn')?.addEventListener('click',()=>{state.camera.distance=clamp(state.camera.distance-2.5,9,40);state.camera.height=clamp(state.camera.height-1.2,4,21);});
+$('cameraMinusBtn')?.addEventListener('click',()=>{state.camera.distance=clamp(state.camera.distance+2.5,9,40);state.camera.height=clamp(state.camera.height+1.2,4,21);});
+const cameraTouches=new Map();let cameraPinch=null;
+canvas.addEventListener('pointerdown',e=>{
+ if(state.view!==0)return;
+ e.preventDefault();cameraTouches.set(e.pointerId,{x:e.clientX,y:e.clientY});
+ try{canvas.setPointerCapture(e.pointerId);}catch(_){}
+ if(cameraTouches.size>=2){const pts=[...cameraTouches.values()];cameraPinch={distance:hypot(pts[0].x-pts[1].x,pts[0].y-pts[1].y),zoom:state.camera.distance,height:state.camera.height};}
+});
+canvas.addEventListener('pointermove',e=>{
+ if(state.view!==0||!cameraTouches.has(e.pointerId))return;
+ e.preventDefault();const before=cameraTouches.get(e.pointerId);cameraTouches.set(e.pointerId,{x:e.clientX,y:e.clientY});
+ if(cameraTouches.size>1&&cameraPinch){
+  const pts=[...cameraTouches.values()],now=hypot(pts[0].x-pts[1].x,pts[0].y-pts[1].y)||1,ratio=cameraPinch.distance/now;
+  state.camera.distance=clamp(cameraPinch.zoom*ratio,9,40);state.camera.height=clamp(cameraPinch.height*ratio,4,21);
+ }else{
+  state.camera.yaw=clamp(state.camera.yaw+(e.clientX-before.x)*.006,-2.7,2.7);
+  state.camera.height=clamp(state.camera.height+(e.clientY-before.y)*.035,4,21);
+ }
+});
+for(const eventName of ['pointerup','pointercancel','lostpointercapture'])canvas.addEventListener(eventName,e=>{cameraTouches.delete(e.pointerId);cameraPinch=null;});
+canvas.addEventListener('wheel',e=>{if(state.view!==0)return;e.preventDefault();const d=e.deltaY>0?1.15:.87;state.camera.distance=clamp(state.camera.distance*d,9,40);state.camera.height=clamp(state.camera.height*d,4,21);},{passive:false});
 const steeringWheel=$('wheel');let startPoint=null;
 steeringWheel.setAttribute('role','slider');steeringWheel.setAttribute('aria-label','Xoay vô lăng sang trái hoặc phải');steeringWheel.setAttribute('aria-valuemin','-100');steeringWheel.setAttribute('aria-valuemax','100');steeringWheel.setAttribute('tabindex','0');
 steeringWheel.addEventListener('pointerdown',e=>{e.preventDefault();startPoint={x:e.clientX,value:state.steer,id:e.pointerId};state.dragSteer=state.steer;steeringWheel.setPointerCapture(e.pointerId);});
