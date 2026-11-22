@@ -683,9 +683,17 @@ for(const eventName of ['pointerup','pointercancel','lostpointercapture'])canvas
 canvas.addEventListener('wheel',e=>{if(state.view!==0)return;e.preventDefault();const d=e.deltaY>0?1.15:.87;state.camera.distance=clamp(state.camera.distance*d,9,40);state.camera.height=clamp(state.camera.height*d,4,21);},{passive:false});
 const steeringWheel=$('wheel');let startPoint=null;
 steeringWheel.setAttribute('role','slider');steeringWheel.setAttribute('aria-label','Xoay vô lăng sang trái hoặc phải');steeringWheel.setAttribute('aria-valuemin','-100');steeringWheel.setAttribute('aria-valuemax','100');steeringWheel.setAttribute('tabindex','0');
-steeringWheel.addEventListener('pointerdown',e=>{e.preventDefault();startPoint={x:e.clientX,value:state.steer,id:e.pointerId};state.dragSteer=state.steer;steeringWheel.setPointerCapture(e.pointerId);});
-steeringWheel.addEventListener('pointermove',e=>{if(!startPoint||e.pointerId!==startPoint.id)return;e.preventDefault();state.dragSteer=clamp(startPoint.value+(e.clientX-startPoint.x)/Math.max(52,steeringWheel.getBoundingClientRect().width*.78),-1,1);});
-function releaseWheel(){startPoint=null;state.dragSteer=null;}
+function pointerAngle(e){const b=steeringWheel.getBoundingClientRect();return Math.atan2(e.clientY-(b.top+b.height/2),e.clientX-(b.left+b.width/2));}
+steeringWheel.addEventListener('pointerdown',e=>{e.preventDefault();startPoint={angle:pointerAngle(e),id:e.pointerId};try{steeringWheel.setPointerCapture(e.pointerId);}catch(_){}});
+steeringWheel.addEventListener('pointermove',e=>{
+ if(!startPoint||e.pointerId!==startPoint.id)return;
+ e.preventDefault();const angle=pointerAngle(e);let delta=angle-startPoint.angle;
+ if(delta>Math.PI)delta-=2*Math.PI;
+ if(delta<-Math.PI)delta+=2*Math.PI;
+ // Rotating one and a half turns reaches full lock; letting go retains the steering position.
+ state.steerTarget=clamp(state.steerTarget+delta/(Math.PI*3),-1,1);startPoint.angle=angle;
+});
+function releaseWheel(){startPoint=null;}
 for(const event of ['pointerup','pointercancel','lostpointercapture'])steeringWheel.addEventListener(event,releaseWheel);
 window.addEventListener('blur',releaseWheel);
 
