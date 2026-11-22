@@ -18,7 +18,8 @@ const names = [
  ['Ghép xe ngang vào nơi đỗ','Lùi xe vào ô đỗ song song, không chạm vạch.','Ghép ngang'],
  ['Tạm dừng nơi có đường sắt','Giảm tốc và dừng trước vạch đường sắt.','Đường sắt'],
  ['Thay đổi số trên đường bằng','Tăng, giảm tốc có kiểm soát và chuyển số theo hướng dẫn.','Chuyển số'],
- ['Kết thúc','Bật xi nhan phải và lái qua vạch đích.','Về đích']
+ ['Kết thúc','Bật xi nhan phải và lái qua vạch đích.','Về đích'],
+ ['Luyện đường trường (DAT mô phỏng)','Tập giữ làn, quan sát và chuyển hướng trên tuyến đường minh họa. Không được tính DAT thực tế.','Đường trường']
 ];
 const route = (points,width=7,extra={}) => ({points,width,...extra});
 const maps = [
@@ -32,11 +33,27 @@ const maps = [
  route([[0,28],[0,14],[0,-7]],9,{park:{x:7,y:8,w:4.2,h:7.8},tag:'parallel'}),
  route([[0,28],[0,12],[0,-1],[0,-25]],8,{stop:6,tag:'rail'}),
  route([[0,29],[0,12],[0,-2],[0,-27]],9,{tag:'speed'}),
- route([[0,29],[0,12],[0,-2],[0,-25]],8,{tag:'finish'})
+ route([[0,29],[0,12],[0,-2],[0,-25]],8,{tag:'finish'}),
+ route([[0,85],[0,30],[0,-20],[24,-45],[24,-108],[-15,-145],[-15,-208],[15,-245],[15,-322]],9,{tag:'dat'})
 ];
-const state = {dragSteer:null,cls:'bat',mode:'practice',lesson:0,view:0,guides:true,score:100,elapsed:0,distance:0,errors:[],done:new Set(),gameOver:false,paused:false,finished:false,keys:{},steer:0,car:null,stageElapsed:0,stopped:false,stopChecked:false,reverseUsed:false,maxSpeed:0,shifted:false,edgeActive:false,overSpeed:0,hazard:null,noticeTimer:0,progress:0};
+const roundedPath=(points,radius=6,steps=8)=>{
+ const res=[points[0]];
+ for(let i=1;i<points.length-1;i++){
+  const a=points[i-1],b=points[i],c=points[i+1],la=hypot(b[0]-a[0],b[1]-a[1])||1,lb=hypot(c[0]-b[0],c[1]-b[1])||1;
+  const u=[(b[0]-a[0])/la,(b[1]-a[1])/la],v=[(c[0]-b[0])/lb,(c[1]-b[1])/lb],turn=Math.acos(clamp(u[0]*v[0]+u[1]*v[1],-1,1));
+  if(turn<.12||turn>3){res.push(b);continue;}
+  const cut=Math.min(radius,la*.34,lb*.34),enter=[b[0]-u[0]*cut,b[1]-u[1]*cut],exit=[b[0]+v[0]*cut,b[1]+v[1]*cut];
+  res.push(enter);
+  for(let k=1;k<=steps;k++){const t=k/(steps+1),q=1-t;res.push([q*q*enter[0]+2*q*t*b[0]+t*t*exit[0],q*q*enter[1]+2*q*t*b[1]+t*t*exit[1]]);}
+  res.push(exit);
+ }
+ res.push(points.at(-1));return res;
+};
+for(const map of maps){if(['corner','curve','dat'].includes(map.tag))map.points=roundedPath(map.points,map.tag==='dat'?11:6,8);}
+
+const state = {dragSteer:null,steerTarget:0,camera:{yaw:0,distance:17.8,height:10.8},cls:'bat',mode:'practice',lesson:0,view:0,guides:true,score:100,elapsed:0,distance:0,errors:[],done:new Set(),gameOver:false,paused:false,finished:false,keys:{},steer:0,car:null,stageElapsed:0,stopped:false,stopChecked:false,reverseUsed:false,maxSpeed:0,shifted:false,edgeActive:false,overSpeed:0,hazard:null,noticeTimer:0,progress:0};
 const classes={bat:{name:'HẠNG B TỰ ĐỘNG',gears:['P','R','N','D'],time:1080,top:24,length:4.4},bmt:{name:'HẠNG B SỐ SÀN',gears:['N','R','1','2'],time:1080,top:24,length:4.4},c1:{name:'HẠNG C1',gears:['N','R','1','2'],time:1200,top:20,length:6.0}};
-const list=()=>state.cls==='c1'?[0,1,2,3,4,5,6,8,9,10]:names.map((_,i)=>i);
+const list=()=>state.mode==='dat'?[11]:(state.cls==='c1'?[0,1,2,3,4,5,6,8,9,10]:names.slice(0,11).map((_,i)=>i));
 const lessonId=()=>list()[state.lesson];
 const lesson=()=>maps[lessonId()];
 const carLength=()=>classes[state.cls].length;
@@ -56,13 +73,13 @@ function initCar() {
  const p=lesson().points,dx=p[1][0]-p[0][0],dy=p[1][1]-p[0][1];
  const heading=Math.atan2(dx,-dy);
  state.car={x:p[0][0],y:p[0][1],heading,speed:0,gear:classes[state.cls].gears.includes('P')?'P':'N',belt:false,signal:'',hazard:false};
- state.steer=0;state.stageElapsed=0;state.stopped=false;state.stopChecked=false;state.reverseUsed=false;state.maxSpeed=0;state.shifted=false;state.edgeActive=false;state.overSpeed=0;state.progress=0;state.finished=false;state.keys={};state.dragSteer=null;state.beltPenalized=false;state.startSignalChecked=false;state.finishSignalChecked=false;state.lightChecked=false;state.warnedPark=false;state.warnedShift=false;state.warnedSpeed=false;
+ state.steer=0;state.steerTarget=0;state.stageElapsed=0;state.stopped=false;state.stopChecked=false;state.reverseUsed=false;state.maxSpeed=0;state.shifted=false;state.edgeActive=false;state.overSpeed=0;state.progress=0;state.finished=false;state.keys={};state.dragSteer=null;state.beltPenalized=false;state.startSignalChecked=false;state.finishSignalChecked=false;state.lightChecked=false;state.warnedPark=false;state.warnedShift=false;state.warnedSpeed=false;
  $('nextBtn').disabled=true;
  updateUI();
 }
 function resetAll(){state.score=100;state.elapsed=0;state.distance=0;state.errors=[];state.done.clear();state.gameOver=false;state.lesson=0;state.paused=false;state.hazard=null;initCar();renderList();}
 function pickClass(cls){state.cls=cls;document.querySelectorAll('[data-class]').forEach(b=>b.classList.toggle('active',b.dataset.class===cls));resetAll();}
-function setMode(mode){state.mode=mode;state.guides=mode==='practice';$('practiceBtn').classList.toggle('chosen',mode==='practice');$('examBtn').classList.toggle('chosen',mode==='exam');resetAll();announce(mode==='exam'?'Thi thử theo chuỗi bài; điểm số chỉ mang tính tham khảo.':'Chế độ luyện tập: làm từng bài, có hướng dẫn.');}
+function setMode(mode){state.mode=mode;state.guides=mode!=='exam';$('practiceBtn').classList.toggle('chosen',mode==='practice');$('examBtn').classList.toggle('chosen',mode==='exam');$('datBtn')?.classList.toggle('chosen',mode==='dat');resetAll();announce(mode==='exam'?'Thi thử theo chuỗi bài; điểm số chỉ mang tính tham khảo.':mode==='dat'?'Tuyến đường trường minh họa: không ghi nhận km DAT thực tế.':'Chế độ luyện tập: làm từng bài, có hướng dẫn.');}
 function selectLesson(index){if(state.mode==='exam'){announce('Chế độ thi theo chuỗi bài: hoàn thành lần lượt từng bài.',true);return;}state.lesson=index;state.gameOver=false;initCar();renderList();}
 function nextStage(){if(!state.finished && state.mode==='exam')return;if(state.lesson<list().length-1){state.lesson++;initCar();renderList();announce('Chuyển sang bài '+String(state.lesson+1).padStart(2,'0'));}else{state.gameOver=true;announce(`Hoàn tất! Kết quả mô phỏng: ${state.score}/100 điểm.`);}}
 function renderList(){
