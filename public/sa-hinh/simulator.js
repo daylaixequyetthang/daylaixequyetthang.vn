@@ -106,8 +106,16 @@ function signal(dir){state.car.signal=state.car.signal===dir?'':dir;updateUI();}
 function hazard(){state.car.hazard=!state.car.hazard;updateUI();}
 function steerInput(){return state.dragSteer===null ? (state.keys.right?1:0)-(state.keys.left?1:0) : state.dragSteer;}
 const distSegment=(p,a,b)=>{const dx=b[0]-a[0],dy=b[1]-a[1],q=clamp(((p.x-a[0])*dx+(p.y-a[1])*dy)/(dx*dx+dy*dy||1),0,1);return {d:hypot(p.x-a[0]-q*dx,p.y-a[1]-q*dy),q};};
-function roadDistance(){const c=state.car,p=lesson().points;let min=Infinity;for(let i=1;i<p.length;i++)min=Math.min(min,distSegment(c,p[i-1],p[i]).d);if(lesson().park){const z=lesson().park;const d=hypot(c.x-z.x,c.y-z.y);min=Math.min(min,Math.max(0,d-z.w/2));}return min;}
+function roadDistance(){const c=state.car,p=lesson().points;let min=Infinity;for(let i=1;i<p.length;i++)min=Math.min(min,distSegment(c,p[i-1],p[i]).d);if(lesson().park){const z=lesson().park,d=hypot(Math.max(0,Math.abs(c.x-z.x)-z.w/2),Math.max(0,Math.abs(c.y-z.y)-z.h/2));min=Math.min(min,d);}return min;}
 function currentTrafficGreen(){return (state.stageElapsed%17)>6;}
+function carInsideBay(c,box){
+ const halfL=carLength()*.5,halfW=state.cls==='c1'?1.18:.99,f=[Math.sin(c.heading),-Math.cos(c.heading)],r=[Math.cos(c.heading),Math.sin(c.heading)];
+ for(const front of [-halfL,halfL])for(const side of [-halfW,halfW]){
+  const x=c.x+f[0]*front+r[0]*side,y=c.y+f[1]*front+r[1]*side;
+  if(Math.abs(x-box.x)>box.w*.5-.08||Math.abs(y-box.y)>box.h*.5-.08)return false;
+ }
+ return true;
+}
 function checkRules(dt) {
  const c=state.car, l=lesson(),id=lessonId(),sp=Math.abs(c.speed)*3.6;
  if(!c.belt && sp>1&&!state.beltPenalized){penalty('Chưa cài dây an toàn',5);state.beltPenalized=true;}
@@ -130,7 +138,7 @@ function checkRules(dt) {
    if(hz.t>6 && !hz.closed){if(!hz.braked)penalty('Không dừng xe khi gặp nguy hiểm',10);if(!hz.lit)penalty('Không bật cảnh báo nguy hiểm',10);hz.closed=true;announce('Tình huống nguy hiểm đã kết thúc. Tắt đèn cảnh báo để đi tiếp.');}
  }
  const p=l.points,goal=l.park||{x:p.at(-1)[0],y:p.at(-1)[1]};
- const arrive=hypot(c.x-goal.x,c.y-goal.y)<(l.park?Math.max(2.2,goal.w*.42):4.4);
+ const arrive=l.park?carInsideBay(c,l.park):hypot(c.x-goal.x,c.y-goal.y)<4.4;
  if(arrive && !state.finished && state.stageElapsed>3){
    if(l.park && (!state.reverseUsed||sp>3)){if(!state.warnedPark){announce('Hãy lùi xe bằng số R và dừng trọn thân xe trong ô đỗ.',true);state.warnedPark=true;}return;}
    if(id===9 && state.cls!=='bat' && !state.shifted){if(!state.warnedShift){announce('Cần chuyển sang số 2 trong bài thay đổi số.',true);state.warnedShift=true;}return;}
@@ -143,8 +151,10 @@ function finishStage(){if(state.finished)return;state.finished=true;state.done.a
 function step(dt){
  if(state.paused||state.finished||state.gameOver)return;
  state.elapsed+=dt;state.stageElapsed+=dt;
- const c=state.car;const gas=!!state.keys.gas,brake=!!state.keys.brake,axis=steerInput();
- state.steer+=(axis-state.steer)*Math.min(1,dt*5);
+ const c=state.car;const gas=!!state.keys.gas,brake=!!state.keys.brake;
+ const direction=(state.keys.right?1:0)-(state.keys.left?1:0);
+ if(direction)state.steerTarget=clamp(state.steerTarget+direction*dt*.38,-1,1);
+ state.steer+=(state.steerTarget-state.steer)*Math.min(1,dt*2.4);
  let target=0;
  if(c.gear==='D'||c.gear==='1'||c.gear==='2')target=gas?6.7:0;
  if(c.gear==='R')target=gas?-3:0;
@@ -160,9 +170,9 @@ function step(dt){
  if(state.mode==='exam' && state.elapsed>35 && !state.hazard)state.hazard={t:0,braked:false,lit:false,closed:false};
  checkRules(dt);
 }
-function guideMessage(){const c=state.car,l=lesson(),id=lessonId();if(state.finished)return 'Tốt! Bạn đã hoàn thành bài. Nhấn “Tiếp theo” để chuyển bài.';if(state.gameOver)return 'Kết thúc lượt. Chọn “Làm lại” để bắt đầu lượt mới.';if(!c.belt)return 'Bước 1: Cài dây an toàn trước khi bắt đầu.';if(c.gear==='P'||c.gear==='N')return 'Bước 2: Chọn D / số 1 để tiến, R để lùi. Sử dụng W hoặc ↑ để tăng ga.';if(state.hazard && !state.hazard.closed)return '⚠ Tình huống bất ngờ: phanh dừng xe ngay và bật đèn cảnh báo!';if(state.hazard && state.hazard.closed && c.hazard)return 'Tình huống đã hết. Tắt cảnh báo nguy hiểm trước khi lái tiếp.';if(id===0&&!state.startSignalChecked)return 'Bật xi nhan trái (Q), giữ chân ga và lái qua vạch xuất phát.';if(l.stop!==undefined&&!state.stopped)return `Đi chậm tới vạch dừng: y ≈ ${l.stop} m trên bản đồ; nhấn Space để dừng.`;if(id===4)return currentTrafficGreen()?'Đèn xanh: quan sát và lái xe qua ngã tư.':'Đèn đỏ: phanh dừng xe trước vạch.';if(l.park)return 'Lái vượt ô đỗ, chọn R và đánh lái từ từ để lùi gọn xe vào ô được tô xanh.';if(id===9)return state.cls==='bat'?'Tăng ga lên khoảng 12 km/h rồi giảm tốc trước điểm kết thúc.':'Tăng ga, dừng xe chuyển từ số 1 sang 2, rồi tới đích.';if(id===10)return 'Bật xi nhan phải (E), giữ hướng xe và đi qua vạch kết thúc.';return names[id][1]+' Lái theo đường trắng; dùng phanh để giữ tốc độ an toàn.';}
+function guideMessage(){const c=state.car,l=lesson(),id=lessonId();if(state.finished)return 'Tốt! Bạn đã hoàn thành bài. Nhấn “Tiếp theo” để chuyển bài.';if(state.gameOver)return 'Kết thúc lượt. Chọn “Làm lại” để bắt đầu lượt mới.';if(!c.belt)return 'Bước 1: Cài dây an toàn trước khi bắt đầu.';if(c.gear==='P'||c.gear==='N')return 'Bước 2: Chọn D / số 1 để tiến, R để lùi. Sử dụng W hoặc ↑ để tăng ga.';if(state.hazard && !state.hazard.closed)return '⚠ Tình huống bất ngờ: phanh dừng xe ngay và bật đèn cảnh báo!';if(state.hazard && state.hazard.closed && c.hazard)return 'Tình huống đã hết. Tắt cảnh báo nguy hiểm trước khi lái tiếp.';if(id===11)return 'Luyện giữ làn, quan sát và điều tốc. Đây là mô phỏng, không ghi nhận quãng đường DAT thực tế.';if(id===0&&!state.startSignalChecked)return 'Bật xi nhan trái (Q), giữ chân ga và lái qua vạch xuất phát.';if(l.stop!==undefined&&!state.stopped)return `Đi chậm tới vạch dừng: y ≈ ${l.stop} m trên bản đồ; nhấn Space để dừng.`;if(id===4)return currentTrafficGreen()?'Đèn xanh: quan sát và lái xe qua ngã tư.':'Đèn đỏ: phanh dừng xe trước vạch.';if(l.park)return 'Lái vượt ô đỗ, chọn R và đánh lái từ từ để lùi gọn xe vào ô được tô xanh.';if(id===9)return state.cls==='bat'?'Tăng ga lên khoảng 12 km/h rồi giảm tốc trước điểm kết thúc.':'Tăng ga, dừng xe chuyển từ số 1 sang 2, rồi tới đích.';if(id===10)return 'Bật xi nhan phải (E), giữ hướng xe và đi qua vạch kết thúc.';return names[id][1]+' Lái theo đường trắng; dùng phanh để giữ tốc độ an toàn.';}
 function status(){const c=state.car;if(state.gameOver)return 'KẾT THÚC LƯỢT';if(state.finished)return 'ĐÃ HOÀN THÀNH';if(state.paused)return 'ĐANG TẠM DỪNG';if(Math.abs(c.speed)<.1)return 'SẴN SÀNG TẬP LÁI';return 'XE ĐANG DI CHUYỂN';}
-function updateStats(){const c=state.car;$('speedText').innerHTML=String(Math.round(Math.abs(c.speed)*3.6)).padStart(2,'0')+'<small> km/h</small>';$('scoreText').textContent=state.score;$('clockText').textContent=String(Math.floor(state.elapsed/60)).padStart(2,'0')+':'+String(Math.floor(state.elapsed%60)).padStart(2,'0');$('distanceText').textContent=Math.round(state.distance)+' m';$('errorCount').textContent=state.errors.length;$('steerText').textContent=Math.round(state.steer*100)+'%';$('wheel').setAttribute('aria-valuenow',String(Math.round(state.steer*100)));$('wheel').style.transform=`rotate(${state.steer*115}deg)`;$('statusText').textContent=state.gameOver?(state.score>=80?'Hoàn tất':'Chưa đạt'):state.finished?'Đã hoàn thành':'Đang luyện';$('systemStatus').textContent=status();$('instruction').textContent=state.guides?guideMessage():'Hướng dẫn đang tắt. Nhấn “Hiện hướng dẫn” để bật lại.';if($('compactGuideText'))$('compactGuideText').textContent=state.guides?guideMessage():'Đã tắt hướng dẫn (bấm ✦ để bật).';}
+function updateStats(){const c=state.car;$('speedText').innerHTML=String(Math.round(Math.abs(c.speed)*3.6)).padStart(2,'0')+'<small> km/h</small>';$('scoreText').textContent=state.score;$('clockText').textContent=String(Math.floor(state.elapsed/60)).padStart(2,'0')+':'+String(Math.floor(state.elapsed%60)).padStart(2,'0');$('distanceText').textContent=Math.round(state.distance)+' m';$('errorCount').textContent=state.errors.length;$('steerText').textContent=(state.steer>0.015?'↱ ':state.steer<-.015?'↰ ':'')+Math.round(Math.abs(state.steer*540))+'°';$('wheel').setAttribute('aria-valuenow',String(Math.round(state.steer*100)));$('wheel').style.transform=`rotate(${state.steer*540}deg)`;$('statusText').textContent=state.gameOver?(state.score>=80?'Hoàn tất':'Chưa đạt'):state.finished?'Đã hoàn thành':'Đang luyện';$('systemStatus').textContent=status();$('instruction').textContent=state.guides?guideMessage():'Hướng dẫn đang tắt. Nhấn “Hiện hướng dẫn” để bật lại.';if($('compactGuideText'))$('compactGuideText').textContent=state.guides?guideMessage():'Đã tắt hướng dẫn (bấm ✦ để bật).';}
 // ----------------------------------------------------------------------
 // QUYET THANG V4 — procedural perspective 3D learning environment.
 // World-space objects are projected against the same car position, heading
@@ -611,7 +621,7 @@ function render(){const {W,H}=resize();if(W<2||H<2)return;ctx.save();if(state.vi
 function isPhone(){return window.matchMedia('(max-width: 1024px)').matches;}
 function setDrawer(open){const drawer=$('lessonDrawer'),backdrop=$('drawerBackdrop');if(!drawer||!backdrop)return;drawer.classList.toggle('open',open);backdrop.classList.toggle('show',open);document.body.classList.toggle('drawerOpen',open);}
 function frame(now){const dt=Math.min((now-lastFrame)/1000||0,.05);lastFrame=now;step(dt);render();if(now-displayTick>120){updateStats();displayTick=now;}requestAnimationFrame(frame);}
-function bindHold(id,key){const el=$(id);const on=e=>{if(e)e.preventDefault();state.keys[key]=true;el.classList.add('pressed');};const off=e=>{if(e)e.preventDefault();state.keys[key]=false;el.classList.remove('pressed');};el.addEventListener('pointerdown',e=>{on(e);try{el.setPointerCapture(e.pointerId)}catch(_){}});['pointerup','pointercancel','lostpointercapture'].forEach(event=>el.addEventListener(event,off));}
+function bindHold(id,key){const el=$(id);const on=e=>{if(e)e.preventDefault();state.keys[key]=true;if(key==='left'||key==='right')state.steerTarget=clamp(state.steerTarget+(key==='left'?-.032:.032),-1,1);el.classList.add('pressed');};const off=e=>{if(e)e.preventDefault();state.keys[key]=false;el.classList.remove('pressed');};el.addEventListener('pointerdown',e=>{on(e);try{el.setPointerCapture(e.pointerId)}catch(_){}});['pointerup','pointercancel','lostpointercapture'].forEach(event=>el.addEventListener(event,off));}
 bindHold('leftBtn','left');bindHold('rightBtn','right');bindHold('gasBtn','gas');bindHold('brakeBtn','brake');
 const keyMap={ArrowLeft:'left',a:'left',A:'left',ArrowRight:'right',d:'right',D:'right',ArrowUp:'gas',w:'gas',W:'gas',ArrowDown:'brake',' ':'brake',s:'brake',S:'brake'};
 window.addEventListener('keydown',e=>{if(e.key in keyMap){if(e.code!=='Space'&&e.target instanceof HTMLInputElement)return;e.preventDefault();state.keys[keyMap[e.key]]=true;return;}if(e.repeat)return;switch(e.key.toLowerCase()){case 'q':signal('left');break;case 'e':signal('right');break;case 'b':toggleBelt();break;case 'h':hazard();break;case 'v':state.view=(state.view+1)%3;updateUI();break;case 'r':if(Math.abs(state.car.speed)<.35)setGear('R');break;case '1':if(Math.abs(state.car.speed)<.35)setGear('1');break;case '2':if(Math.abs(state.car.speed)<.35)setGear('2');break;}});
