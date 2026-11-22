@@ -310,7 +310,7 @@ function drawAtmosphere(W,H){
 }
 function courseScenery(){
  const l=lesson(),id=lessonId();
- if(courseScenery.cache?.id===id)return courseScenery.cache.objects;
+ if(courseScenery.cache?.id===id&&courseScenery.cache.routeRef===l.points)return courseScenery.cache.objects;
  const objects=[];
  // Fixed real-world locations: environmental objects don't slide with the camera.
  l.points.slice(1).forEach((to,index)=>{
@@ -329,7 +329,7 @@ function courseScenery(){
   const side=i%2?1:-1;
   objects.push({type:'building',x:side*(19+(i%2)*5),y:-35+i*7,w:6+i%2*2,d:5,h:3.8+i%3*1.2,seed:i});
  }
- courseScenery.cache={id,objects};return objects;
+ courseScenery.cache={id,routeRef:l.points,objects};return objects;
 }
 function shadow(P,x,y,rx,ry,alpha=.16){
  const s=P(x,y,roadElevation(y));if(!s)return;
@@ -367,7 +367,7 @@ function building(P,o){
  }
 }
 function drawScenery(P){
- const objects=courseScenery().slice();
+ const objects=courseScenery().filter(o=>state.mode!=='dat'||hypot(o.x-state.car.x,o.y-state.car.y)<180);
  objects.sort((a,b)=>P.depth(b.x,b.y)-P.depth(a.x,a.y));
  for(const item of objects){const d=P.depth(item.x,item.y);if(d<P.near||d>95)continue;if(item.type==='building')building(P,item);else tree(P,item);}
 }
@@ -375,6 +375,7 @@ function drawBoundaryPosts(P){
  const l=lesson();
  l.points.slice(1).forEach((b,i)=>{
    const a=l.points[i],dx=b[0]-a[0],dy=b[1]-a[1],len=hypot(dx,dy)||1,n=[-dy/len,dx/len];
+   if(state.mode==='dat'&&hypot((a[0]+b[0])/2-state.car.x,(a[1]+b[1])/2-state.car.y)>190)return;
    for(let d=2;d<len;d+=7.5){
       const x=a[0]+dx*d/len,y=a[1]+dy*d/len,z=roadElevation(y);
       for(const side of [-1,1]){
@@ -417,7 +418,9 @@ function roadSegment(P,a,b,width,i){
 function drawRoad(P,mapView){
  const l=lesson(),segments=[];
  for(let i=1;i<l.points.length;i++){
-  const a=l.points[i-1],b=l.points[i],len=hypot(b[0]-a[0],b[1]-a[1]),steps=Math.max(1,Math.ceil(len/3));
+  const a=l.points[i-1],b=l.points[i];
+  if(state.mode==='dat'&&hypot((a[0]+b[0])/2-state.car.x,(a[1]+b[1])/2-state.car.y)>190)continue;
+  const len=hypot(b[0]-a[0],b[1]-a[1]),steps=Math.max(1,Math.ceil(len/3));
   for(let k=0;k<steps;k++){
     const lerp=t=>[a[0]+(b[0]-a[0])*t,a[1]+(b[1]-a[1])*t];
     const p=lerp(k/steps),q=lerp((k+1)/steps);segments.push({a:p,b:q,dist:P.depth?P.depth((p[0]+q[0])/2,(p[1]+q[1])/2):0,index:i*50+k});
