@@ -692,6 +692,37 @@ window.addEventListener('keyup',e=>{if(e.key in keyMap){e.preventDefault();state
 window.addEventListener('blur',()=>{state.keys={};document.querySelectorAll('.pressed').forEach(e=>e.classList.remove('pressed'));});
 $('practiceBtn').addEventListener('click',()=>{setMode('practice');if(isPhone())setDrawer(false);});$('examBtn').addEventListener('click',()=>{setMode('exam');if(isPhone())setDrawer(false);});$('datBtn')?.addEventListener('click',()=>{setMode('dat');if(isPhone())setDrawer(false);});
 document.querySelectorAll('[data-class]').forEach(b=>b.addEventListener('click',()=>{pickClass(b.dataset.class);if(isPhone())setDrawer(false);}));
+$('datRouteSelect')?.addEventListener('change',e=>applyDatCourse(Number(e.target.value)));
+$('datGpxFile')?.addEventListener('change',async e=>{
+ const file=e.target.files?.[0];if(!file)return;
+ try{
+  if(file.size>10000000)throw Error('Tệp GPX quá lớn (tối đa 10 MB).');
+  const xml=new DOMParser().parseFromString(await file.text(),'application/xml');
+  if(xml.getElementsByTagName('parsererror').length)throw Error('Tệp GPX không hợp lệ.');
+  const nodes=Array.from(xml.getElementsByTagName('*')).filter(n=>n.localName==='trkpt'||n.localName==='rtept');
+  const geo=nodes.map(n=>({lat:Number(n.getAttribute('lat')),lon:Number(n.getAttribute('lon'))})).filter(p=>Number.isFinite(p.lat)&&Number.isFinite(p.lon)&&Math.abs(p.lat)<=90&&Math.abs(p.lon)<=180);
+  if(geo.length<4)throw Error('Cần ít nhất 4 tọa độ trkpt hoặc rtept trong GPX.');
+  const first=geo[0],cosLat=Math.cos(first.lat*Math.PI/180);
+  const step=Math.max(1,Math.floor(geo.length/350));
+  const sampled=geo.filter((_,i)=>i%step===0||i===geo.length-1);
+  const pts=sampled.map(p=>[(p.lon-first.lon)*111320*cosLat,-(p.lat-first.lat)*111132]);
+  const deduped=pts.filter((p,i)=>i===0||hypot(p[0]-pts[i-1][0],p[1]-pts[i-1][1])>.5);
+  const distance=routeMeters(deduped);
+  if(deduped.length<4||distance<100||distance>100000)throw Error('Tuyến GPX cần dài từ 100 m đến 100 km.');
+  const label='GPX: '+file.name.replace(/\.gpx$/i,'').slice(0,40);
+  const old=datCourses.findIndex(course=>course.imported);
+  if(old>=0)datCourses.splice(old,1);
+  datCourses.push({name:label,points:deduped,distance,imported:true});
+  const selector=$('datRouteSelect');
+  const last=Array.from(selector.options).find(opt=>opt.dataset.imported==='true');
+  if(last)last.remove();
+  const option=new Option(label,String(datCourses.length-1));option.dataset.imported='true';selector.add(option);selector.value=option.value;
+  applyDatCourse(datCourses.length-1);
+  announce('Đã nhập GPX: '+(distance/1000).toFixed(2)+' km. Đây là tuyến mô phỏng, không phải nhật ký DAT thực tế.');
+ }catch(err){announce('Không thể nhập GPX: '+err.message,true);}
+ e.target.value='';
+});
+
 $('viewBtn').addEventListener('click',()=>{state.view=(state.view+1)%3;updateUI();});
 $('restartBtn').addEventListener('click',()=>{if(state.mode==='exam')resetAll();else{state.score=100;state.errors=[];state.distance=0;state.gameOver=false;initCar();}announce('Bài luyện đã khởi động lại.');});
 $('nextBtn').addEventListener('click',nextStage);$('pauseBtn').addEventListener('click',()=>{state.paused=!state.paused;$('pauseBtn').textContent=state.paused?'Tiếp tục ▶':'Tạm dừng Ⅱ';});
@@ -753,5 +784,7 @@ window.addEventListener('blur',releaseWheel);
 
 // For classroom troubleshooting and automated QA, read-only public diagnostics.
 window.QuyetThangSaHinhDebug=Object.freeze({getState:()=>({cls:state.cls,mode:state.mode,lesson:state.lesson,view:state.view,gear:state.car?.gear,belt:state.car?.belt,signal:state.car?.signal,steer:state.steer,steerTarget:state.steerTarget,camera:{...state.camera},score:state.score,errors:state.errors.length,position:state.car?{x:state.car.x,y:state.car.y,heading:state.car.heading,speed:state.car.speed}:null,finished:state.finished}),lessonCount:()=>list().length});
+try{const entries=JSON.parse(window.localStorage?.getItem('qt-dat-practice-history-v1')||'[]');if(Array.isArray(entries))state.datHistory=entries.slice(-20).filter(x=>x&&typeof x.name==='string'&&typeof x.km==='string');}catch(_){}
+renderDatHistory();
 resetAll();if(isPhone()){state.view=0;updateUI();}requestAnimationFrame(frame);if(!isPhone())announce('Mời chọn bài, cài dây an toàn và bắt đầu luyện lái.');
 })();
