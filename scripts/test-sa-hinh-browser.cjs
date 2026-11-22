@@ -53,6 +53,13 @@ const server=http.createServer((req,res)=>{
    await page.locator('#lessonDrawerBtn').click();
    await page.locator('#datBtn').click();
    assert.equal(await page.evaluate(()=>window.QuyetThangSaHinhDebug.getState().mode),'dat');
+   await page.locator('#lessonDrawerBtn').click();
+   await page.locator('#datRouteSelect').selectOption('0');
+   assert.ok((await page.locator('#lessonTitle').textContent()).includes('Giữ làn'),'DAT route selection should change exercise');
+   const gpx='<?xml version="1.0" encoding="utf-8"?><gpx version="1.1"><trk><trkseg>'+[0,1,2,3,4,5].map(i=>'<trkpt lat="10.'+String(90000+i*100).padStart(5,'0')+'" lon="108.10000"/>').join('')+'</trkseg></trk></gpx>';
+   await page.locator('#datGpxFile').setInputFiles({name:'tuyen-test.gpx',mimeType:'application/gpx+xml',buffer:Buffer.from(gpx)});
+   await page.waitForFunction(()=>!!document.querySelector('#datRouteSelect option[data-imported="true"]'));
+   assert.ok((await page.locator('#lessonTitle').textContent()).includes('GPX:'),'GPX import should activate new course');
   }
   await ctx.close();
   console.log('PASS viewport '+width+'x'+height);
