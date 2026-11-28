@@ -2,20 +2,35 @@
 <html lang="vi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#0b1428"><title>Luyện sa hình tương tác | Quyết Thắng</title><link rel="stylesheet" href="./style.css"></head>
 <body>
 <div class="app">
-  <header class="topbar"><div class="identity"><div class="identityMark">QT<span>✓</span></div><div><strong>QUYẾT THẮNG</strong><small>DRIVING LAB <span class="live">●</span> HỌC SA HÌNH</small></div></div><div class="topRight"><span class="version">PHỐI CẢNH 3D · BETA 4</span><a href="/dang-ky" target="_parent">Đăng ký học lái <span>↗</span></a></div></header>
+  <header class="topbar"><div class="identity"><img class="identityMark identityLogo" src="/logo.png" alt="Logo Trung Tâm GDNN Quyết Thắng" /><div><strong>QUYẾT THẮNG</strong><small>DRIVING LAB <span class="live">●</span> HỌC SA HÌNH</small></div></div><div class="topRight"><span class="version">PHỐI CẢNH 3D · BETA 5</span><a href="/dang-ky" target="_parent">Đăng ký học lái <span>↗</span></a></div></header>
   <button class="drawerBackdrop" id="drawerBackdrop" type="button" aria-label="Đóng bảng danh sách bài"></button>
   <div class="content">
     <aside class="sidebar" id="lessonDrawer">
       <div class="sideHeading"><span>CHƯƠNG TRÌNH</span><span id="lessonCount">11 bài</span></div>
       <div class="tabs" role="group" aria-label="Chọn hạng xe"><button data-class="bat" class="active">B Tự động</button><button data-class="bmt">B Số sàn</button><button data-class="c1">C1</button></div>
-      <div class="modeGroup" role="group" aria-label="Chọn chế độ"><button id="practiceBtn" class="chosen">▣ Luyện tập</button><button id="examBtn">◷ Thi liên hoàn</button></div>
+      <div class="modeGroup" role="group" aria-label="Chọn chế độ"><button id="practiceBtn" class="chosen">▣ Luyện tập</button><button id="examBtn">◷ Thi liên hoàn</button><button id="datBtn">▰ DAT mô phỏng</button></div>
+<section id="datRoutePanel" class="datRoutePanel" hidden aria-label="Các tuyến luyện đường trường DAT mô phỏng">
+<label for="datRouteSelect">CHỌN TUYẾN DAT MÔ PHỎNG</label>
+<select id="datRouteSelect" aria-label="Chọn tuyến đường trường">
+<option value="0">01 · Giữ làn - đường thẳng</option>
+<option value="1">02 · Quan sát - quanh co</option>
+<option value="2">03 · Chuyển hướng - giao lộ</option>
+<option value="3" selected>04 · Tổng hợp - đường trường</option>
+</select>
+<label class="datGpxLabel" for="datGpxFile">Nhập GPX tuyến riêng (tham khảo)</label>
+<input id="datGpxFile" type="file" accept=".gpx,application/gpx+xml,application/xml,text/xml" aria-label="Chọn tệp GPX để mô phỏng tuyến đường trường" />
+<p id="datProgress">Luyện mô phỏng 0.00 km</p>
+<div class="datHistoryTitle">NHẬT KÝ LUYỆN TẬP TRÊN MÁY NÀY</div>
+<div id="datHistory" class="datHistory" aria-live="polite">Chưa có lượt DAT mô phỏng nào hoàn tất.</div>
+<small class="datWarning">Các quãng đường và nhật ký tại đây không được ghi nhận bởi thiết bị DAT trên xe thật.</small>
+</section>
       <div class="sectionLabel">DANH SÁCH BÀI TẬP <span id="progressCount">0 / 11</span></div>
       <div id="lessonList" class="lessonList"></div>
       <div class="sidebarFoot"><span>◎ Học từng bài, tự kiểm tra thao tác</span><a href="/thi-thu" target="_parent">Ôn tập lý thuyết 600 câu ↗</a></div>
     </aside>
     <main class="stage">
       <div class="stageTop"><div><div class="breadcrumb" id="breadcrumb">BÀI 01 / 11 · HẠNG B</div><h1 id="lessonTitle">Xuất phát</h1><p id="lessonDesc">Luyện thao tác xuất phát đúng quy trình.</p></div><div class="stageActions"><button id="lessonDrawerBtn" class="mobileDrawerBtn" type="button" aria-label="Chọn bài học và hạng xe" title="Mở danh sách bài và chế độ"><span class="actionGlyph" aria-hidden="true">☰</span><span class="actionText"> Bài học</span></button><button id="viewBtn" type="button" aria-label="Đổi góc nhìn" title="Thay đổi góc nhìn"><span class="actionGlyph" aria-hidden="true">◉</span> <span class="actionText" id="viewName">3D sau xe</span></button><button id="restartBtn" type="button" aria-label="Làm lại bài" title="Khởi động lại bài"><span class="actionGlyph" aria-hidden="true">↻</span><span class="actionText"> Làm lại</span></button><button id="focusBtn" class="focusBtn" type="button" aria-pressed="false" aria-label="Bật chế độ tập trung" title="Thu gọn thông tin"><span class="actionGlyph" aria-hidden="true">◫</span><span class="actionText"> Tập trung</span></button><button id="fullscreenBtn" class="fullscreenBtn" type="button" title="Toàn màn hình">⛶</button></div></div>
-      <div class="screen"><canvas id="scene" aria-label="Mô phỏng lái xe tương tác" tabindex="0"></canvas>
+      <div class="screen"><canvas id="scene" aria-label="Mô phỏng lái xe tương tác; kéo để xoay camera, chụm hai ngón để thu phóng" tabindex="0"></canvas><div class="cameraTools" aria-label="Điều khiển camera góc thứ ba"><button type="button" id="cameraMinusBtn" title="Thu nhỏ góc nhìn" aria-label="Camera xa hơn">−</button><button type="button" id="cameraResetBtn" title="Đặt lại camera" aria-label="Đặt lại camera">↻</button><button type="button" id="cameraPlusBtn" title="Phóng gần" aria-label="Camera gần hơn">+</button></div>
         <div class="hud"><div class="hudCard speed"><span>TỐC ĐỘ</span><strong id="speedText">00<small> km/h</small></strong></div><div class="hudCard"><span>ĐIỂM LUYỆN</span><strong id="scoreText">100</strong></div><div class="hudCard"><span>THỜI GIAN</span><strong id="clockText">00:00</strong></div></div>
         <div class="viewLabel" id="viewLabel">GÓC NHÌN THEO XE · CHẠM ◉ ĐỂ ĐỔI</div><div class="screenNotice" id="notice" aria-live="polite"></div>
         <div class="screenBottom"><div class="direction"><span class="dot green"></span><span id="systemStatus">SẴN SÀNG TẬP LÁI</span></div><div class="gearDisplay" id="gearDisplay">P</div><div class="meter">MÔ PHỎNG HỌC TẬP</div></div>
@@ -26,13 +41,13 @@
     </main>
     <aside class="controls"><div class="controlsTitle"><span>BUỒNG LÁI MÔ PHỎNG</span><small>VÔ LĂNG BÊN TRÁI · BÀN ĐẠP · HỘP SỐ</small></div>
       <div class="cockpitGrid">
-        <section class="steeringArea"><div class="wheelHead"><span>VÔ LĂNG</span><small id="steerText">0°</small></div><div class="wheelFrame"><button class="turnBtn" id="leftBtn" aria-label="Đánh lái trái">‹</button><div class="wheel" id="wheel"><div class="wheelSpoke a"></div><div class="wheelSpoke b"></div><div class="wheelSpoke c"></div><div class="wheelCenter">QT</div></div><button class="turnBtn" id="rightBtn" aria-label="Đánh lái phải">›</button></div><div class="steeringHint">← → hoặc A / D để đánh lái</div></section>
+        <section class="steeringArea"><div class="wheelHead"><span>VÔ LĂNG</span><div class="wheelStatus"><small id="steerText">0°</small><button id="centerSteerBtn" type="button" title="Trả lái về thẳng">⟲ Trả lái</button></div></div><div class="wheelFrame"><button class="turnBtn" id="leftBtn" aria-label="Đánh lái trái">‹</button><div class="wheel" id="wheel"><div class="wheelSpoke a"></div><div class="wheelSpoke b"></div><div class="wheelSpoke c"></div><div class="wheelCenter">QT</div></div><button class="turnBtn" id="rightBtn" aria-label="Đánh lái phải">›</button></div><div class="steeringHint">Xoay vô lăng chậm · giữ góc khi thả · bấm Trả lái để về thẳng</div></section>
         <section class="gearPanel"><div class="groupTitle">HỘP SỐ <small id="transmissionLabel">SỐ TỰ ĐỘNG</small></div><div class="gearButtons" id="gearButtons"></div></section>
         <section class="pedalPanel"><div class="panelLabel">BÀN ĐẠP</div><div class="pedals"><button id="brakeBtn" class="pedal brake"><span>▤</span><strong>PHANH</strong><small>SPACE / ↓</small></button><button id="gasBtn" class="pedal gas"><span>▥</span><strong>CHÂN GA</strong><small>↑ / W</small></button></div></section>
         <section class="signalsPanel"><div class="panelLabel">CHỨC NĂNG NHANH</div><div class="signals"><button id="beltBtn" class="signal"><span>◇</span>Dây an toàn <b id="beltState">CHƯA</b></button><button id="signalLeft" class="signal"><span>◀</span>Xi nhan trái</button><button id="signalRight" class="signal"><span>▶</span>Xi nhan phải</button><button id="hazardBtn" class="signal"><span>⚠</span>Cảnh báo</button></div></section>
         <div class="controlActions"><button id="nextBtn" disabled>Tiếp theo →</button><button id="pauseBtn">Tạm dừng Ⅱ</button></div>
       </div>
-      <div class="controlsNote">Bản mô phỏng độc lập, miễn phí. Điểm số và quỹ đạo chỉ để luyện tập, <b>không phải điểm sát hạch chính thức</b>.</div>
+      <div class="controlsNote">Luyện 11 bài sa hình hạng B, 10 bài hạng C1 và tuyến đường trường DAT minh họa. Điểm số, quỹ đạo và quãng đường trong app <b>không phải kết quả sát hạch hay nhật ký DAT thực tế</b>.</div>
     </aside>
   </div>
   <footer class="foot"><span>© Trung Tâm GDNN Quyết Thắng · <a href="https://daylaixequyetthang.vn" target="_parent">daylaixequyetthang.vn</a></span><span>Hotline / Zalo: <a href="tel:0848751111">084.875.1111</a></span><span>Di chuyển: ↑ ↓ ← → · Ga: W · Phanh: Space · Xi nhan: Q / E · Dây an toàn: B</span></footer>

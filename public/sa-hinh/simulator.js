@@ -18,7 +18,8 @@ const names = [
  ['Ghép xe ngang vào nơi đỗ','Lùi xe vào ô đỗ song song, không chạm vạch.','Ghép ngang'],
  ['Tạm dừng nơi có đường sắt','Giảm tốc và dừng trước vạch đường sắt.','Đường sắt'],
  ['Thay đổi số trên đường bằng','Tăng, giảm tốc có kiểm soát và chuyển số theo hướng dẫn.','Chuyển số'],
- ['Kết thúc','Bật xi nhan phải và lái qua vạch đích.','Về đích']
+ ['Kết thúc','Bật xi nhan phải và lái qua vạch đích.','Về đích'],
+ ['Luyện đường trường (DAT mô phỏng)','Tập giữ làn, quan sát và chuyển hướng trên tuyến đường minh họa. Không được tính DAT thực tế.','Đường trường']
 ];
 const route = (points,width=7,extra={}) => ({points,width,...extra});
 const maps = [
@@ -28,18 +29,60 @@ const maps = [
  route([[0,29],[0,10],[0,-2],[19,-2],[19,-24]],5.8,{tag:'corner'}),
  route([[0,29],[0,11],[0,-5],[0,-25]],8,{stop:8,tag:'light'}),
  route([[-11,31],[-11,20],[7,12],[10,1],[-8,-11],[-9,-29]],6.8,{tag:'curve'}),
- route([[0,28],[0,12],[0,-6]],9,{park:{x:8,y:11,w:4.6,h:9.5},tag:'bay'}),
- route([[0,28],[0,14],[0,-7]],9,{park:{x:7,y:8,w:4.2,h:7.8},tag:'parallel'}),
+ route([[0,28],[0,12],[0,-6]],9,{park:{x:8,y:11,w:6.8,h:3.0},tag:'bay'}),
+ route([[0,28],[0,14],[0,-7]],9,{park:{x:6.4,y:8,w:3.0,h:7.8},tag:'parallel'}),
  route([[0,28],[0,12],[0,-1],[0,-25]],8,{stop:6,tag:'rail'}),
  route([[0,29],[0,12],[0,-2],[0,-27]],9,{tag:'speed'}),
- route([[0,29],[0,12],[0,-2],[0,-25]],8,{tag:'finish'})
+ route([[0,29],[0,12],[0,-2],[0,-25]],8,{tag:'finish'}),
+ route([[0,85],[0,30],[0,-20],[24,-45],[24,-108],[-15,-145],[-15,-208],[15,-245],[15,-322]],9,{tag:'dat'})
 ];
-const state = {dragSteer:null,cls:'bat',mode:'practice',lesson:0,view:0,guides:true,score:100,elapsed:0,distance:0,errors:[],done:new Set(),gameOver:false,paused:false,finished:false,keys:{},steer:0,car:null,stageElapsed:0,stopped:false,stopChecked:false,reverseUsed:false,maxSpeed:0,shifted:false,edgeActive:false,overSpeed:0,hazard:null,noticeTimer:0,progress:0};
+const roundedPath=(points,radius=6,steps=8)=>{
+ const res=[points[0]];
+ for(let i=1;i<points.length-1;i++){
+  const a=points[i-1],b=points[i],c=points[i+1],la=hypot(b[0]-a[0],b[1]-a[1])||1,lb=hypot(c[0]-b[0],c[1]-b[1])||1;
+  const u=[(b[0]-a[0])/la,(b[1]-a[1])/la],v=[(c[0]-b[0])/lb,(c[1]-b[1])/lb],turn=Math.acos(clamp(u[0]*v[0]+u[1]*v[1],-1,1));
+  if(turn<.12||turn>3){res.push(b);continue;}
+  const cut=Math.min(radius,la*.34,lb*.34),enter=[b[0]-u[0]*cut,b[1]-u[1]*cut],exit=[b[0]+v[0]*cut,b[1]+v[1]*cut];
+  res.push(enter);
+  for(let k=1;k<=steps;k++){const t=k/(steps+1),q=1-t;res.push([q*q*enter[0]+2*q*t*b[0]+t*t*exit[0],q*q*enter[1]+2*q*t*b[1]+t*t*exit[1]]);}
+  res.push(exit);
+ }
+ res.push(points.at(-1));return res;
+};
+for(const map of maps){if(['corner','curve','dat'].includes(map.tag))map.points=roundedPath(map.points,map.tag==='dat'?11:6,8);}
+const routeMeters=points=>points.slice(1).reduce((sum,p,i)=>sum+hypot(p[0]-points[i][0],p[1]-points[i][1]),0);
+// These are illustrated practice courses, not GPS reproductions of public roads.
+const datCourses=[
+ {name:'Giữ làn · đường thẳng',points:[[0,85],[0,30],[0,-120],[0,-260],[0,-480]]},
+ {name:'Quan sát · đường quanh co',points:roundedPath([[0,80],[0,15],[25,-30],[25,-130],[-20,-190],[-20,-280],[0,-360]],11)},
+ {name:'Chuyển hướng · giao lộ',points:roundedPath([[0,75],[0,22],[0,-40],[60,-90],[60,-190],[25,-235],[25,-320]],13)},
+ {name:'Tổng hợp · đường trường',points:maps[11].points}
+];
+datCourses.forEach(course=>{course.distance=routeMeters(course.points);});
+
+const state = {dragSteer:null,steerTarget:0,camera:{yaw:0,distance:17.8,height:10.8},cls:'bat',mode:'practice',lesson:0,view:0,guides:true,score:100,elapsed:0,distance:0,errors:[],done:new Set(),gameOver:false,paused:false,finished:false,keys:{},steer:0,car:null,stageElapsed:0,stopped:false,stopChecked:false,reverseUsed:false,maxSpeed:0,shifted:false,edgeActive:false,overSpeed:0,hazard:null,noticeTimer:0,progress:0,datRoute:3,datHistory:[]};
 const classes={bat:{name:'HẠNG B TỰ ĐỘNG',gears:['P','R','N','D'],time:1080,top:24,length:4.4},bmt:{name:'HẠNG B SỐ SÀN',gears:['N','R','1','2'],time:1080,top:24,length:4.4},c1:{name:'HẠNG C1',gears:['N','R','1','2'],time:1200,top:20,length:6.0}};
-const list=()=>state.cls==='c1'?[0,1,2,3,4,5,6,8,9,10]:names.map((_,i)=>i);
+const list=()=>state.mode==='dat'?[11]:(state.cls==='c1'?[0,1,2,3,4,5,6,8,9,10]:names.slice(0,11).map((_,i)=>i));
 const lessonId=()=>list()[state.lesson];
 const lesson=()=>maps[lessonId()];
 const carLength=()=>classes[state.cls].length;
+function applyDatCourse(index){
+ if(!Number.isInteger(index)||index<0||index>=datCourses.length)return;
+ state.datRoute=index;maps[11].points=datCourses[index].points;courseScenery.cache=null;
+ resetAll();announce('Tuyến luyện DAT: '+datCourses[index].name+'. Không tính vào DAT thực tế.');
+}
+function saveDatHistory(){
+ try{window.localStorage?.setItem('qt-dat-practice-history-v1',JSON.stringify(state.datHistory.slice(-20)));}catch(_){}
+}
+function renderDatHistory(){
+ const node=$('datHistory');if(!node)return;
+ node.textContent=state.datHistory.length?state.datHistory.slice(-4).reverse().map(x=>x.date+' · '+x.name+' · '+x.km+' km · '+x.minutes+' phút · '+x.errors+' lỗi').join('\n'):'Chưa có lượt DAT mô phỏng nào hoàn tất.';
+}
+function recordDat(){
+ state.datHistory.push({date:new Date().toLocaleDateString('vi-VN'),name:datCourses[state.datRoute].name,km:(state.distance/1000).toFixed(2),minutes:(state.elapsed/60).toFixed(1),errors:state.errors.length});
+ saveDatHistory();renderDatHistory();
+}
+
 let lastFrame=0, displayTick=0;
 function announce(msg, warning=false) {
  const el=$('notice');el.textContent=msg;el.className='screenNotice visible'+(warning?' warning':'');
@@ -56,13 +99,13 @@ function initCar() {
  const p=lesson().points,dx=p[1][0]-p[0][0],dy=p[1][1]-p[0][1];
  const heading=Math.atan2(dx,-dy);
  state.car={x:p[0][0],y:p[0][1],heading,speed:0,gear:classes[state.cls].gears.includes('P')?'P':'N',belt:false,signal:'',hazard:false};
- state.steer=0;state.stageElapsed=0;state.stopped=false;state.stopChecked=false;state.reverseUsed=false;state.maxSpeed=0;state.shifted=false;state.edgeActive=false;state.overSpeed=0;state.progress=0;state.finished=false;state.keys={};state.dragSteer=null;state.beltPenalized=false;state.startSignalChecked=false;state.finishSignalChecked=false;state.lightChecked=false;state.warnedPark=false;state.warnedShift=false;state.warnedSpeed=false;
+ state.steer=0;state.steerTarget=0;state.stageElapsed=0;state.stopped=false;state.stopChecked=false;state.reverseUsed=false;state.maxSpeed=0;state.shifted=false;state.edgeActive=false;state.overSpeed=0;state.progress=0;state.finished=false;state.keys={};state.dragSteer=null;state.beltPenalized=false;state.startSignalChecked=false;state.finishSignalChecked=false;state.lightChecked=false;state.warnedPark=false;state.warnedShift=false;state.warnedSpeed=false;
  $('nextBtn').disabled=true;
  updateUI();
 }
 function resetAll(){state.score=100;state.elapsed=0;state.distance=0;state.errors=[];state.done.clear();state.gameOver=false;state.lesson=0;state.paused=false;state.hazard=null;initCar();renderList();}
 function pickClass(cls){state.cls=cls;document.querySelectorAll('[data-class]').forEach(b=>b.classList.toggle('active',b.dataset.class===cls));resetAll();}
-function setMode(mode){state.mode=mode;state.guides=mode==='practice';$('practiceBtn').classList.toggle('chosen',mode==='practice');$('examBtn').classList.toggle('chosen',mode==='exam');resetAll();announce(mode==='exam'?'Thi thử theo chuỗi bài; điểm số chỉ mang tính tham khảo.':'Chế độ luyện tập: làm từng bài, có hướng dẫn.');}
+function setMode(mode){state.mode=mode;state.guides=mode!=='exam';$('practiceBtn').classList.toggle('chosen',mode==='practice');$('examBtn').classList.toggle('chosen',mode==='exam');$('datBtn')?.classList.toggle('chosen',mode==='dat');if($('datRoutePanel'))$('datRoutePanel').hidden=mode!=='dat';resetAll();announce(mode==='exam'?'Thi thử theo chuỗi bài; điểm số chỉ mang tính tham khảo.':mode==='dat'?'Chọn một tuyến DAT hoặc nhập GPX. Km mô phỏng không ghi nhận DAT thực tế.':'Chế độ luyện tập: làm từng bài, có hướng dẫn.');}
 function selectLesson(index){if(state.mode==='exam'){announce('Chế độ thi theo chuỗi bài: hoàn thành lần lượt từng bài.',true);return;}state.lesson=index;state.gameOver=false;initCar();renderList();}
 function nextStage(){if(!state.finished && state.mode==='exam')return;if(state.lesson<list().length-1){state.lesson++;initCar();renderList();announce('Chuyển sang bài '+String(state.lesson+1).padStart(2,'0'));}else{state.gameOver=true;announce(`Hoàn tất! Kết quả mô phỏng: ${state.score}/100 điểm.`);}}
 function renderList(){
@@ -73,7 +116,7 @@ function renderList(){
 function updateUI(){
  const id=lessonId(),n=list().length,c=state.car;
  $('breadcrumb').textContent=`BÀI ${String(state.lesson+1).padStart(2,'0')} / ${n} · ${classes[state.cls].name}`;
- $('lessonTitle').textContent=names[id][0];$('lessonDesc').textContent=names[id][1];
+ $('lessonTitle').textContent=state.mode==='dat'?datCourses[state.datRoute].name:names[id][0];$('lessonDesc').textContent=names[id][1];
  $('lessonNumber').textContent=`${String(state.lesson+1).padStart(2,'0')}/${n}`;
  $('gearDisplay').textContent=c.gear;$('transmissionLabel').textContent=state.cls==='bat'?'SỐ TỰ ĐỘNG':'SỐ CƠ KHÍ';
  $('gearButtons').innerHTML=classes[state.cls].gears.map(g=>`<button type="button" data-gear="${g}" class="${g===c.gear?'selected':''}">${g}</button>`).join('');
@@ -82,6 +125,7 @@ function updateUI(){
  $('signalLeft').classList.toggle('on',c.signal==='left');$('signalRight').classList.toggle('on',c.signal==='right');$('hazardBtn').classList.toggle('on',c.hazard);
  $('viewName').textContent=['3D sau xe','Góc ghế lái','Sơ đồ trên cao'][state.view];
  $('viewLabel').textContent=['GÓC NHÌN SAU XE · CHẠM ◉ ĐỂ ĐỔI','VÔ LĂNG TRÁI · GÓC NHÌN HỌC VIÊN','GÓC NHÌN TRÊN CAO · BẢN ĐỒ'][state.view];
+ document.body.classList.toggle('orbitView',state.view===0);
 }
 function setGear(g){if(Math.abs(state.car.speed)>.35){announce('Phải dừng xe trước khi đổi chiều chuyển động.',true);return;}state.car.gear=g;if(g==='2')state.shifted=true;updateUI();}
 function toggleBelt(){state.car.belt=!state.car.belt;updateUI();}
@@ -89,8 +133,16 @@ function signal(dir){state.car.signal=state.car.signal===dir?'':dir;updateUI();}
 function hazard(){state.car.hazard=!state.car.hazard;updateUI();}
 function steerInput(){return state.dragSteer===null ? (state.keys.right?1:0)-(state.keys.left?1:0) : state.dragSteer;}
 const distSegment=(p,a,b)=>{const dx=b[0]-a[0],dy=b[1]-a[1],q=clamp(((p.x-a[0])*dx+(p.y-a[1])*dy)/(dx*dx+dy*dy||1),0,1);return {d:hypot(p.x-a[0]-q*dx,p.y-a[1]-q*dy),q};};
-function roadDistance(){const c=state.car,p=lesson().points;let min=Infinity;for(let i=1;i<p.length;i++)min=Math.min(min,distSegment(c,p[i-1],p[i]).d);if(lesson().park){const z=lesson().park;const d=hypot(c.x-z.x,c.y-z.y);min=Math.min(min,Math.max(0,d-z.w/2));}return min;}
+function roadDistance(){const c=state.car,p=lesson().points;let min=Infinity;for(let i=1;i<p.length;i++)min=Math.min(min,distSegment(c,p[i-1],p[i]).d);if(lesson().park){const z=lesson().park,d=hypot(Math.max(0,Math.abs(c.x-z.x)-z.w/2),Math.max(0,Math.abs(c.y-z.y)-z.h/2));min=Math.min(min,d);}return min;}
 function currentTrafficGreen(){return (state.stageElapsed%17)>6;}
+function carInsideBay(c,box){
+ const halfL=carLength()*.5,halfW=state.cls==='c1'?1.18:.99,f=[Math.sin(c.heading),-Math.cos(c.heading)],r=[Math.cos(c.heading),Math.sin(c.heading)];
+ for(const front of [-halfL,halfL])for(const side of [-halfW,halfW]){
+  const x=c.x+f[0]*front+r[0]*side,y=c.y+f[1]*front+r[1]*side;
+  if(Math.abs(x-box.x)>box.w*.5-.08||Math.abs(y-box.y)>box.h*.5-.08)return false;
+ }
+ return true;
+}
 function checkRules(dt) {
  const c=state.car, l=lesson(),id=lessonId(),sp=Math.abs(c.speed)*3.6;
  if(!c.belt && sp>1&&!state.beltPenalized){penalty('Chưa cài dây an toàn',5);state.beltPenalized=true;}
@@ -105,7 +157,7 @@ function checkRules(dt) {
  state.maxSpeed=Math.max(state.maxSpeed,sp);
  const off=roadDistance() > l.width/2+0.2;
  if(off && !state.edgeActive && state.stageElapsed>1.1){penalty('Bánh xe ra ngoài đường giới hạn',5);state.edgeActive=true;}else if(!off)state.edgeActive=false;
- if(sp>classes[state.cls].top){state.overSpeed+=dt;if(state.overSpeed>3){penalty('Vượt tốc độ giới hạn trong sân',1);state.overSpeed=0;}}else state.overSpeed=0;
+ if(sp>(state.mode==='dat'?48:classes[state.cls].top)){state.overSpeed+=dt;if(state.overSpeed>3){penalty('Vượt tốc độ giới hạn trong sân',1);state.overSpeed=0;}}else state.overSpeed=0;
  if(state.hazard && !state.hazard.closed){const hz=state.hazard;
    hz.t+=dt;
    if(sp<1 && !hz.braked){hz.braked=true;if(hz.t>3)penalty('Phanh chậm trong tình huống bất ngờ',10);}
@@ -113,8 +165,9 @@ function checkRules(dt) {
    if(hz.t>6 && !hz.closed){if(!hz.braked)penalty('Không dừng xe khi gặp nguy hiểm',10);if(!hz.lit)penalty('Không bật cảnh báo nguy hiểm',10);hz.closed=true;announce('Tình huống nguy hiểm đã kết thúc. Tắt đèn cảnh báo để đi tiếp.');}
  }
  const p=l.points,goal=l.park||{x:p.at(-1)[0],y:p.at(-1)[1]};
- const arrive=hypot(c.x-goal.x,c.y-goal.y)<(l.park?Math.max(2.2,goal.w*.42):4.4);
- if(arrive && !state.finished && state.stageElapsed>3){
+ const arrive=l.park?carInsideBay(c,l.park):hypot(c.x-goal.x,c.y-goal.y)<4.4;
+ const reached=state.mode==='dat'?arrive&&state.distance>datCourses[state.datRoute].distance*.65:arrive;
+ if(reached && !state.finished && state.stageElapsed>3){
    if(l.park && (!state.reverseUsed||sp>3)){if(!state.warnedPark){announce('Hãy lùi xe bằng số R và dừng trọn thân xe trong ô đỗ.',true);state.warnedPark=true;}return;}
    if(id===9 && state.cls!=='bat' && !state.shifted){if(!state.warnedShift){announce('Cần chuyển sang số 2 trong bài thay đổi số.',true);state.warnedShift=true;}return;}
    if(id===9 && state.maxSpeed<12){if(!state.warnedSpeed){announce('Tăng tốc có kiểm soát trước khi kết thúc bài.',true);state.warnedSpeed=true;}return;}
@@ -122,14 +175,16 @@ function checkRules(dt) {
    finishStage();
  }
 }
-function finishStage(){if(state.finished)return;state.finished=true;state.done.add(state.lesson);$('nextBtn').disabled=false;renderList();announce(`Hoàn thành bài ${state.lesson+1}! Điểm hiện tại: ${state.score}/100.`);if(state.mode==='exam'){setTimeout(()=>{if(state.finished&&!state.gameOver)nextStage();},1700);} }
+function finishStage(){if(state.finished)return;state.finished=true;if(state.mode==='dat')recordDat();state.done.add(state.lesson);$('nextBtn').disabled=false;renderList();announce(`Hoàn thành bài ${state.lesson+1}! Điểm hiện tại: ${state.score}/100.`);if(state.mode==='exam'){setTimeout(()=>{if(state.finished&&!state.gameOver)nextStage();},1700);} }
 function step(dt){
  if(state.paused||state.finished||state.gameOver)return;
  state.elapsed+=dt;state.stageElapsed+=dt;
- const c=state.car;const gas=!!state.keys.gas,brake=!!state.keys.brake,axis=steerInput();
- state.steer+=(axis-state.steer)*Math.min(1,dt*5);
+ const c=state.car;const gas=!!state.keys.gas,brake=!!state.keys.brake;
+ const direction=(state.keys.right?1:0)-(state.keys.left?1:0);
+ if(direction)state.steerTarget=clamp(state.steerTarget+direction*dt*.38,-1,1);
+ state.steer+=(state.steerTarget-state.steer)*Math.min(1,dt*2.4);
  let target=0;
- if(c.gear==='D'||c.gear==='1'||c.gear==='2')target=gas?6.7:0;
+ if(c.gear==='D'||c.gear==='1'||c.gear==='2')target=gas?(state.mode==='dat'?11:6.7):0;
  if(c.gear==='R')target=gas?-3:0;
  if(brake){const sign=Math.sign(c.speed);c.speed=sign*Math.max(0,Math.abs(c.speed)-dt*8);}
  else{const d=target-c.speed;const power=gas?2.8:1.25;c.speed+=clamp(d,-power*dt,power*dt);if(Math.abs(c.speed)<.014)c.speed=0;}
@@ -143,9 +198,9 @@ function step(dt){
  if(state.mode==='exam' && state.elapsed>35 && !state.hazard)state.hazard={t:0,braked:false,lit:false,closed:false};
  checkRules(dt);
 }
-function guideMessage(){const c=state.car,l=lesson(),id=lessonId();if(state.finished)return 'Tốt! Bạn đã hoàn thành bài. Nhấn “Tiếp theo” để chuyển bài.';if(state.gameOver)return 'Kết thúc lượt. Chọn “Làm lại” để bắt đầu lượt mới.';if(!c.belt)return 'Bước 1: Cài dây an toàn trước khi bắt đầu.';if(c.gear==='P'||c.gear==='N')return 'Bước 2: Chọn D / số 1 để tiến, R để lùi. Sử dụng W hoặc ↑ để tăng ga.';if(state.hazard && !state.hazard.closed)return '⚠ Tình huống bất ngờ: phanh dừng xe ngay và bật đèn cảnh báo!';if(state.hazard && state.hazard.closed && c.hazard)return 'Tình huống đã hết. Tắt cảnh báo nguy hiểm trước khi lái tiếp.';if(id===0&&!state.startSignalChecked)return 'Bật xi nhan trái (Q), giữ chân ga và lái qua vạch xuất phát.';if(l.stop!==undefined&&!state.stopped)return `Đi chậm tới vạch dừng: y ≈ ${l.stop} m trên bản đồ; nhấn Space để dừng.`;if(id===4)return currentTrafficGreen()?'Đèn xanh: quan sát và lái xe qua ngã tư.':'Đèn đỏ: phanh dừng xe trước vạch.';if(l.park)return 'Lái vượt ô đỗ, chọn R và đánh lái từ từ để lùi gọn xe vào ô được tô xanh.';if(id===9)return state.cls==='bat'?'Tăng ga lên khoảng 12 km/h rồi giảm tốc trước điểm kết thúc.':'Tăng ga, dừng xe chuyển từ số 1 sang 2, rồi tới đích.';if(id===10)return 'Bật xi nhan phải (E), giữ hướng xe và đi qua vạch kết thúc.';return names[id][1]+' Lái theo đường trắng; dùng phanh để giữ tốc độ an toàn.';}
+function guideMessage(){const c=state.car,l=lesson(),id=lessonId();if(state.finished)return 'Tốt! Bạn đã hoàn thành bài. Nhấn “Tiếp theo” để chuyển bài.';if(state.gameOver)return 'Kết thúc lượt. Chọn “Làm lại” để bắt đầu lượt mới.';if(!c.belt)return 'Bước 1: Cài dây an toàn trước khi bắt đầu.';if(c.gear==='P'||c.gear==='N')return 'Bước 2: Chọn D / số 1 để tiến, R để lùi. Sử dụng W hoặc ↑ để tăng ga.';if(state.hazard && !state.hazard.closed)return '⚠ Tình huống bất ngờ: phanh dừng xe ngay và bật đèn cảnh báo!';if(state.hazard && state.hazard.closed && c.hazard)return 'Tình huống đã hết. Tắt cảnh báo nguy hiểm trước khi lái tiếp.';if(id===11)return 'Luyện giữ làn, quan sát và điều tốc. Đây là mô phỏng, không ghi nhận quãng đường DAT thực tế.';if(id===0&&!state.startSignalChecked)return 'Bật xi nhan trái (Q), giữ chân ga và lái qua vạch xuất phát.';if(l.stop!==undefined&&!state.stopped)return `Đi chậm tới vạch dừng: y ≈ ${l.stop} m trên bản đồ; nhấn Space để dừng.`;if(id===4)return currentTrafficGreen()?'Đèn xanh: quan sát và lái xe qua ngã tư.':'Đèn đỏ: phanh dừng xe trước vạch.';if(l.park)return 'Lái vượt ô đỗ, chọn R và đánh lái từ từ để lùi gọn xe vào ô được tô xanh.';if(id===9)return state.cls==='bat'?'Tăng ga lên khoảng 12 km/h rồi giảm tốc trước điểm kết thúc.':'Tăng ga, dừng xe chuyển từ số 1 sang 2, rồi tới đích.';if(id===10)return 'Bật xi nhan phải (E), giữ hướng xe và đi qua vạch kết thúc.';return names[id][1]+' Lái theo đường trắng; dùng phanh để giữ tốc độ an toàn.';}
 function status(){const c=state.car;if(state.gameOver)return 'KẾT THÚC LƯỢT';if(state.finished)return 'ĐÃ HOÀN THÀNH';if(state.paused)return 'ĐANG TẠM DỪNG';if(Math.abs(c.speed)<.1)return 'SẴN SÀNG TẬP LÁI';return 'XE ĐANG DI CHUYỂN';}
-function updateStats(){const c=state.car;$('speedText').innerHTML=String(Math.round(Math.abs(c.speed)*3.6)).padStart(2,'0')+'<small> km/h</small>';$('scoreText').textContent=state.score;$('clockText').textContent=String(Math.floor(state.elapsed/60)).padStart(2,'0')+':'+String(Math.floor(state.elapsed%60)).padStart(2,'0');$('distanceText').textContent=Math.round(state.distance)+' m';$('errorCount').textContent=state.errors.length;$('steerText').textContent=Math.round(state.steer*100)+'%';$('wheel').setAttribute('aria-valuenow',String(Math.round(state.steer*100)));$('wheel').style.transform=`rotate(${state.steer*115}deg)`;$('statusText').textContent=state.gameOver?(state.score>=80?'Hoàn tất':'Chưa đạt'):state.finished?'Đã hoàn thành':'Đang luyện';$('systemStatus').textContent=status();$('instruction').textContent=state.guides?guideMessage():'Hướng dẫn đang tắt. Nhấn “Hiện hướng dẫn” để bật lại.';if($('compactGuideText'))$('compactGuideText').textContent=state.guides?guideMessage():'Đã tắt hướng dẫn (bấm ✦ để bật).';}
+function updateStats(){const c=state.car;$('speedText').innerHTML=String(Math.round(Math.abs(c.speed)*3.6)).padStart(2,'0')+'<small> km/h</small>';$('scoreText').textContent=state.score;$('clockText').textContent=String(Math.floor(state.elapsed/60)).padStart(2,'0')+':'+String(Math.floor(state.elapsed%60)).padStart(2,'0');$('distanceText').textContent=Math.round(state.distance)+' m';$('errorCount').textContent=state.errors.length;$('steerText').textContent=(state.steer>0.015?'↱ ':state.steer<-.015?'↰ ':'')+Math.round(Math.abs(state.steer*540))+'°';$('wheel').setAttribute('aria-valuenow',String(Math.round(state.steer*100)));$('wheel').style.transform=`rotate(${state.steer*540}deg)`;if($('datProgress'))$('datProgress').textContent='Luyện mô phỏng '+(state.distance/1000).toFixed(2)+' km · tuyến '+(datCourses[state.datRoute].distance/1000).toFixed(2)+' km';$('statusText').textContent=state.gameOver?(state.score>=80?'Hoàn tất':'Chưa đạt'):state.finished?'Đã hoàn thành':'Đang luyện';$('systemStatus').textContent=status();$('instruction').textContent=state.guides?guideMessage():'Hướng dẫn đang tắt. Nhấn “Hiện hướng dẫn” để bật lại.';if($('compactGuideText'))$('compactGuideText').textContent=state.guides?guideMessage():'Đã tắt hướng dẫn (bấm ✦ để bật).';}
 // ----------------------------------------------------------------------
 // QUYET THANG V4 — procedural perspective 3D learning environment.
 // World-space objects are projected against the same car position, heading
@@ -167,17 +222,28 @@ function roadElevation(y){
  return 0;
 }
 function makeProjection(W,H){
- const c=state.car,inside=state.view===1, f=[Math.sin(c.heading),-Math.cos(c.heading)],r=[Math.cos(c.heading),Math.sin(c.heading)];
- const behind=inside?1.27:11.2,offset=inside?-.68:0;
- const cx=c.x-f[0]*behind+r[0]*offset,cy=c.y-f[1]*behind+r[1]*offset;
- const cameraZ=roadElevation(c.y)+(inside?1.6:4.2);
- const focal=W*(inside?.87:.81),horizon=H*(inside?.405:.38);
- const near=.78;
+ const c=state.car,inside=state.view===1,fcar=[Math.sin(c.heading),-Math.cos(c.heading)],rcar=[Math.cos(c.heading),Math.sin(c.heading)];
+ let f=fcar,r=rcar,cx,cy;
+ if(inside){cx=c.x-fcar[0]*1.27-rcar[0]*.68;cy=c.y-fcar[1]*1.27-rcar[1]*.68;}
+ else{
+  const cam=state.camera,dist=cam.distance,yaw=cam.yaw;
+  cx=c.x-fcar[0]*Math.cos(yaw)*dist+rcar[0]*Math.sin(yaw)*dist;
+  cy=c.y-fcar[1]*Math.cos(yaw)*dist+rcar[1]*Math.sin(yaw)*dist;
+  const aimX=c.x+fcar[0]*6,aimY=c.y+fcar[1]*6,mag=hypot(aimX-cx,aimY-cy)||1;
+  f=[(aimX-cx)/mag,(aimY-cy)/mag];r=[-f[1],f[0]];
+ }
+ const cameraZ=roadElevation(c.y)+(inside?1.6:state.camera.height);
+ const focal=W*(inside?.87:.81),horizon=H*(inside?.405:.51);
+ const near=.78,pitch=inside?0:Math.atan2(Math.max(.6,state.camera.height-.9),state.camera.distance+7);
+ const cp=Math.cos(pitch),sp=Math.sin(pitch);
  const depth=(x,y)=>(x-cx)*f[0]+(y-cy)*f[1];
  function project(x,y,z=0){
    const d=depth(x,y);if(d<near-1e-6)return null;
-   const s=focal/(d+1.35);
-   return {x:W*.5+((x-cx)*r[0]+(y-cy)*r[1])*s,y:horizon+(cameraZ-z)*s,depth:d,scale:s};
+   const dz=cameraZ-z,viewDepth=inside?d+1.35:d*cp+dz*sp+1.35;
+   if(viewDepth<near)return null;
+   const scale=focal/viewDepth;
+   const vertical=inside?dz:dz*cp-d*sp;
+   return {x:W*.5+((x-cx)*r[0]+(y-cy)*r[1])*scale,y:horizon+vertical*scale,depth:d,scale};
  }
  project.depth=depth;project.near=near;project.focal=focal;project.horizon=horizon;
  return project;
@@ -244,7 +310,7 @@ function drawAtmosphere(W,H){
 }
 function courseScenery(){
  const l=lesson(),id=lessonId();
- if(courseScenery.cache?.id===id)return courseScenery.cache.objects;
+ if(courseScenery.cache?.id===id&&courseScenery.cache.routeRef===l.points)return courseScenery.cache.objects;
  const objects=[];
  // Fixed real-world locations: environmental objects don't slide with the camera.
  l.points.slice(1).forEach((to,index)=>{
@@ -263,7 +329,7 @@ function courseScenery(){
   const side=i%2?1:-1;
   objects.push({type:'building',x:side*(19+(i%2)*5),y:-35+i*7,w:6+i%2*2,d:5,h:3.8+i%3*1.2,seed:i});
  }
- courseScenery.cache={id,objects};return objects;
+ courseScenery.cache={id,routeRef:l.points,objects};return objects;
 }
 function shadow(P,x,y,rx,ry,alpha=.16){
  const s=P(x,y,roadElevation(y));if(!s)return;
@@ -301,7 +367,7 @@ function building(P,o){
  }
 }
 function drawScenery(P){
- const objects=courseScenery().slice();
+ const objects=courseScenery().filter(o=>state.mode!=='dat'||hypot(o.x-state.car.x,o.y-state.car.y)<180);
  objects.sort((a,b)=>P.depth(b.x,b.y)-P.depth(a.x,a.y));
  for(const item of objects){const d=P.depth(item.x,item.y);if(d<P.near||d>95)continue;if(item.type==='building')building(P,item);else tree(P,item);}
 }
@@ -309,6 +375,7 @@ function drawBoundaryPosts(P){
  const l=lesson();
  l.points.slice(1).forEach((b,i)=>{
    const a=l.points[i],dx=b[0]-a[0],dy=b[1]-a[1],len=hypot(dx,dy)||1,n=[-dy/len,dx/len];
+   if(state.mode==='dat'&&hypot((a[0]+b[0])/2-state.car.x,(a[1]+b[1])/2-state.car.y)>190)return;
    for(let d=2;d<len;d+=7.5){
       const x=a[0]+dx*d/len,y=a[1]+dy*d/len,z=roadElevation(y);
       for(const side of [-1,1]){
@@ -338,6 +405,7 @@ function roadSegment(P,a,b,width,i){
     // narrow reflective paint glow outlines the real road boundary, not a fictitious lane centre.
     worldLine(P,edge(a,side*.985),edge(b,side*.985),'#fff9dd36',.8);
  }
+ if(lesson().tag==='dat'&&i%4<2){worldLine(P,[a[0],a[1],bottom(a[1])+.06],[b[0],b[1],bottom(b[1])+.06],'#edf1ef',1.6);}
  if(i%3===0){
    const mid=[(a[0]+b[0])/2,(a[1]+b[1])/2];
    for(const v of [-1.8,1.3]){
@@ -350,7 +418,9 @@ function roadSegment(P,a,b,width,i){
 function drawRoad(P,mapView){
  const l=lesson(),segments=[];
  for(let i=1;i<l.points.length;i++){
-  const a=l.points[i-1],b=l.points[i],len=hypot(b[0]-a[0],b[1]-a[1]),steps=Math.max(1,Math.ceil(len/3));
+  const a=l.points[i-1],b=l.points[i];
+  if(state.mode==='dat'&&hypot((a[0]+b[0])/2-state.car.x,(a[1]+b[1])/2-state.car.y)>190)continue;
+  const len=hypot(b[0]-a[0],b[1]-a[1]),steps=Math.max(1,Math.ceil(len/3));
   for(let k=0;k<steps;k++){
     const lerp=t=>[a[0]+(b[0]-a[0])*t,a[1]+(b[1]-a[1])*t];
     const p=lerp(k/steps),q=lerp((k+1)/steps);segments.push({a:p,b:q,dist:P.depth?P.depth((p[0]+q[0])/2,(p[1]+q[1])/2):0,index:i*50+k});
@@ -456,6 +526,7 @@ function drawCourseObjects(P){
  const origin=p[0],next=p[1],dx=next[0]-origin[0],dy=next[1]-origin[1],len=hypot(dx,dy)||1,n=[-dy/len,dx/len];
  const sx=origin[0]+dx*.30+n[0]*(l.width*.5+3.5),sy=origin[1]+dy*.30+n[1]*(l.width*.5+3.5);
  signboard(P,sx,sy,'BÀI '+String(lessonId()+1).padStart(2,'0'),names[lessonId()][2].toUpperCase());
+ if(tag==='dat')signboard(P,l.width*.5+3,40,'ĐƯỜNG TRƯỜNG','DAT MÔ PHỎNG', '#176b8a');
  if(tag==='walk')signboard(P,l.width*.5+3,1.5,'NGƯỜI ĐI BỘ','QUAN SÁT', '#176b8a');
  if(tag==='hill')signboard(P,l.width*.5+2.8,6,'DỐC CẦU','DỪNG ĐÚNG VẠCH','#996524');
  if(tag==='light')trafficSignal(P,l.width*.5+2.5,6.3);
@@ -571,6 +642,7 @@ function drawTopdown(W,H){
  ctx.strokeStyle='#ffffff12';ctx.lineWidth=1;
  for(let x=-100;x<=100;x+=5){line(P(x,-100),P(x,100),'#effff010',1);line(P(-100,x),P(100,x),'#effff010',1);}
  drawRoad(P,true);
+ drawSteeringGuide(P,true);
  const f=[Math.sin(c.heading),-Math.cos(c.heading)],r=[Math.cos(c.heading),Math.sin(c.heading)],L=carLength(),width=state.cls==='c1'?2.3:1.95;
  const at=(forward,side)=>P(c.x+f[0]*forward+r[0]*side,c.y+f[1]*forward+r[1]*side,0);
  drawPolygon([at(-L*.5,-width*.5),at(-L*.5,width*.5),at(L*.5,width*.5),at(L*.5,-width*.5)],'#f4fbff','#367bd5',2);
@@ -578,11 +650,32 @@ function drawTopdown(W,H){
  drawPolygon([at(L*.5,-width*.34),at(L*.5,width*.34),at(L*.66,0)],'#5aefe0');
  ctx.fillStyle='#fff';ctx.textAlign='center';ctx.font='900 11px system-ui';ctx.fillText('XE',W*.5,H*.56+3);
 }
+// Predict the next few metres of vehicle motion from the same bicycle model used by physics.
+// Hidden during the exam mode; this line is a learning aid, not an official wheel track.
+function drawSteeringGuide(P,mapView=false){
+ if(!state.guides||state.finished||state.gameOver||!state.car)return;
+ const c=state.car,wb=state.cls==='c1'?3.6:2.65;
+ const radiusCurve=Math.tan(state.steer*.56)/wb*(c.gear==='R'?-1:1);
+ let x=c.x,y=c.y,a=c.heading,prev=null;
+ for(let i=0;i<34;i++){
+  const old=[x,y,roadElevation(y)+.15];
+  a+=radiusCurve*.48;
+  const driveSign=c.gear==='R'?-1:1;
+  x+=Math.sin(a)*.48*driveSign;y-=Math.cos(a)*.48*driveSign;
+  const next=[x,y,roadElevation(y)+.15];
+  if(i>2 && i%2===0){
+   if(mapView)line(P(...old),P(...next),'#51e6ed',2.1);
+   else worldLine(P,old,next,'#3fffe8',2.5);
+  }
+  prev=next;
+ }
+}
 function drawScene3D(W,H){
  drawAtmosphere(W,H);
  const P=makeProjection(W,H);
  drawScenery(P);
  drawRoad(P,false);
+ drawSteeringGuide(P,false);
  drawBoundaryPosts(P);
  drawCourseObjects(P);
  if(state.view===1)drawCockpit(W,H);else drawCarWorld(P);
@@ -594,14 +687,45 @@ function render(){const {W,H}=resize();if(W<2||H<2)return;ctx.save();if(state.vi
 function isPhone(){return window.matchMedia('(max-width: 1024px)').matches;}
 function setDrawer(open){const drawer=$('lessonDrawer'),backdrop=$('drawerBackdrop');if(!drawer||!backdrop)return;drawer.classList.toggle('open',open);backdrop.classList.toggle('show',open);document.body.classList.toggle('drawerOpen',open);}
 function frame(now){const dt=Math.min((now-lastFrame)/1000||0,.05);lastFrame=now;step(dt);render();if(now-displayTick>120){updateStats();displayTick=now;}requestAnimationFrame(frame);}
-function bindHold(id,key){const el=$(id);const on=e=>{if(e)e.preventDefault();state.keys[key]=true;el.classList.add('pressed');};const off=e=>{if(e)e.preventDefault();state.keys[key]=false;el.classList.remove('pressed');};el.addEventListener('pointerdown',e=>{on(e);try{el.setPointerCapture(e.pointerId)}catch(_){}});['pointerup','pointercancel','lostpointercapture'].forEach(event=>el.addEventListener(event,off));}
+function bindHold(id,key){const el=$(id);const on=e=>{if(e)e.preventDefault();state.keys[key]=true;if(key==='left'||key==='right')state.steerTarget=clamp(state.steerTarget+(key==='left'?-.032:.032),-1,1);el.classList.add('pressed');};const off=e=>{if(e)e.preventDefault();state.keys[key]=false;el.classList.remove('pressed');};el.addEventListener('pointerdown',e=>{on(e);try{el.setPointerCapture(e.pointerId)}catch(_){}});['pointerup','pointercancel','lostpointercapture'].forEach(event=>el.addEventListener(event,off));}
 bindHold('leftBtn','left');bindHold('rightBtn','right');bindHold('gasBtn','gas');bindHold('brakeBtn','brake');
 const keyMap={ArrowLeft:'left',a:'left',A:'left',ArrowRight:'right',d:'right',D:'right',ArrowUp:'gas',w:'gas',W:'gas',ArrowDown:'brake',' ':'brake',s:'brake',S:'brake'};
 window.addEventListener('keydown',e=>{if(e.key in keyMap){if(e.code!=='Space'&&e.target instanceof HTMLInputElement)return;e.preventDefault();state.keys[keyMap[e.key]]=true;return;}if(e.repeat)return;switch(e.key.toLowerCase()){case 'q':signal('left');break;case 'e':signal('right');break;case 'b':toggleBelt();break;case 'h':hazard();break;case 'v':state.view=(state.view+1)%3;updateUI();break;case 'r':if(Math.abs(state.car.speed)<.35)setGear('R');break;case '1':if(Math.abs(state.car.speed)<.35)setGear('1');break;case '2':if(Math.abs(state.car.speed)<.35)setGear('2');break;}});
 window.addEventListener('keyup',e=>{if(e.key in keyMap){e.preventDefault();state.keys[keyMap[e.key]]=false;}});
 window.addEventListener('blur',()=>{state.keys={};document.querySelectorAll('.pressed').forEach(e=>e.classList.remove('pressed'));});
-$('practiceBtn').addEventListener('click',()=>{setMode('practice');if(isPhone())setDrawer(false);});$('examBtn').addEventListener('click',()=>{setMode('exam');if(isPhone())setDrawer(false);});
+$('practiceBtn').addEventListener('click',()=>{setMode('practice');if(isPhone())setDrawer(false);});$('examBtn').addEventListener('click',()=>{setMode('exam');if(isPhone())setDrawer(false);});$('datBtn')?.addEventListener('click',()=>{setMode('dat');if(isPhone())setDrawer(false);});
 document.querySelectorAll('[data-class]').forEach(b=>b.addEventListener('click',()=>{pickClass(b.dataset.class);if(isPhone())setDrawer(false);}));
+$('datRouteSelect')?.addEventListener('change',e=>applyDatCourse(Number(e.target.value)));
+$('datGpxFile')?.addEventListener('change',async e=>{
+ const file=e.target.files?.[0];if(!file)return;
+ try{
+  if(file.size>10000000)throw Error('Tệp GPX quá lớn (tối đa 10 MB).');
+  const xml=new DOMParser().parseFromString(await file.text(),'application/xml');
+  if(xml.getElementsByTagName('parsererror').length)throw Error('Tệp GPX không hợp lệ.');
+  const nodes=Array.from(xml.getElementsByTagName('*')).filter(n=>n.localName==='trkpt'||n.localName==='rtept');
+  const geo=nodes.map(n=>({lat:Number(n.getAttribute('lat')),lon:Number(n.getAttribute('lon'))})).filter(p=>Number.isFinite(p.lat)&&Number.isFinite(p.lon)&&Math.abs(p.lat)<=90&&Math.abs(p.lon)<=180);
+  if(geo.length<4)throw Error('Cần ít nhất 4 tọa độ trkpt hoặc rtept trong GPX.');
+  const first=geo[0],cosLat=Math.cos(first.lat*Math.PI/180);
+  const step=Math.max(1,Math.floor(geo.length/350));
+  const sampled=geo.filter((_,i)=>i%step===0||i===geo.length-1);
+  const pts=sampled.map(p=>[(p.lon-first.lon)*111320*cosLat,-(p.lat-first.lat)*111132]);
+  const deduped=pts.filter((p,i)=>i===0||hypot(p[0]-pts[i-1][0],p[1]-pts[i-1][1])>.5);
+  const distance=routeMeters(deduped);
+  if(deduped.length<4||distance<100||distance>100000)throw Error('Tuyến GPX cần dài từ 100 m đến 100 km.');
+  const label='GPX: '+file.name.replace(/\.gpx$/i,'').slice(0,40);
+  const old=datCourses.findIndex(course=>course.imported);
+  if(old>=0)datCourses.splice(old,1);
+  datCourses.push({name:label,points:deduped,distance,imported:true});
+  const selector=$('datRouteSelect');
+  const last=Array.from(selector.options).find(opt=>opt.dataset.imported==='true');
+  if(last)last.remove();
+  const option=new Option(label,String(datCourses.length-1));option.dataset.imported='true';selector.add(option);selector.value=option.value;
+  applyDatCourse(datCourses.length-1);
+  announce('Đã nhập GPX: '+(distance/1000).toFixed(2)+' km. Đây là tuyến mô phỏng, không phải nhật ký DAT thực tế.');
+ }catch(err){announce('Không thể nhập GPX: '+err.message,true);}
+ e.target.value='';
+});
+
 $('viewBtn').addEventListener('click',()=>{state.view=(state.view+1)%3;updateUI();});
 $('restartBtn').addEventListener('click',()=>{if(state.mode==='exam')resetAll();else{state.score=100;state.errors=[];state.distance=0;state.gameOver=false;initCar();}announce('Bài luyện đã khởi động lại.');});
 $('nextBtn').addEventListener('click',nextStage);$('pauseBtn').addEventListener('click',()=>{state.paused=!state.paused;$('pauseBtn').textContent=state.paused?'Tiếp tục ▶':'Tạm dừng Ⅱ';});
@@ -620,15 +744,50 @@ $('fullscreenBtn')?.addEventListener('click',async()=>{
 });
 document.addEventListener('fullscreenchange',()=>{$('fullscreenBtn').textContent=document.fullscreenElement?'⛶ Thoát':'⛶';});
 $('compactGuideToggle')?.addEventListener('click',()=>{const hidden=document.body.classList.toggle('guideCompactHidden');$('compactGuideToggle').textContent=hidden?'✦ Hiện hướng dẫn':'×';});
+$('centerSteerBtn')?.addEventListener('click',()=>{state.steerTarget=0;announce('Đang trả lái về thẳng.');});
+function resetCamera(){state.camera={yaw:0,distance:17.8,height:10.8};}
+$('cameraResetBtn')?.addEventListener('click',()=>{resetCamera();announce('Đã đặt lại góc camera.');});
+$('cameraPlusBtn')?.addEventListener('click',()=>{state.camera.distance=clamp(state.camera.distance-2.5,9,40);state.camera.height=clamp(state.camera.height-1.2,4,21);});
+$('cameraMinusBtn')?.addEventListener('click',()=>{state.camera.distance=clamp(state.camera.distance+2.5,9,40);state.camera.height=clamp(state.camera.height+1.2,4,21);});
+const cameraTouches=new Map();let cameraPinch=null;
+canvas.addEventListener('pointerdown',e=>{
+ if(state.view!==0)return;
+ e.preventDefault();cameraTouches.set(e.pointerId,{x:e.clientX,y:e.clientY});
+ try{canvas.setPointerCapture(e.pointerId);}catch(_){}
+ if(cameraTouches.size>=2){const pts=[...cameraTouches.values()];cameraPinch={distance:hypot(pts[0].x-pts[1].x,pts[0].y-pts[1].y),zoom:state.camera.distance,height:state.camera.height};}
+});
+canvas.addEventListener('pointermove',e=>{
+ if(state.view!==0||!cameraTouches.has(e.pointerId))return;
+ e.preventDefault();const before=cameraTouches.get(e.pointerId);cameraTouches.set(e.pointerId,{x:e.clientX,y:e.clientY});
+ if(cameraTouches.size>1&&cameraPinch){
+  const pts=[...cameraTouches.values()],now=hypot(pts[0].x-pts[1].x,pts[0].y-pts[1].y)||1,ratio=cameraPinch.distance/now;
+  state.camera.distance=clamp(cameraPinch.zoom*ratio,9,40);state.camera.height=clamp(cameraPinch.height*ratio,4,21);
+ }else{
+  state.camera.yaw=clamp(state.camera.yaw+(e.clientX-before.x)*.006,-2.7,2.7);
+  state.camera.height=clamp(state.camera.height+(e.clientY-before.y)*.035,4,21);
+ }
+});
+for(const eventName of ['pointerup','pointercancel','lostpointercapture'])canvas.addEventListener(eventName,e=>{cameraTouches.delete(e.pointerId);cameraPinch=null;});
+canvas.addEventListener('wheel',e=>{if(state.view!==0)return;e.preventDefault();const d=e.deltaY>0?1.15:.87;state.camera.distance=clamp(state.camera.distance*d,9,40);state.camera.height=clamp(state.camera.height*d,4,21);},{passive:false});
 const steeringWheel=$('wheel');let startPoint=null;
 steeringWheel.setAttribute('role','slider');steeringWheel.setAttribute('aria-label','Xoay vô lăng sang trái hoặc phải');steeringWheel.setAttribute('aria-valuemin','-100');steeringWheel.setAttribute('aria-valuemax','100');steeringWheel.setAttribute('tabindex','0');
-steeringWheel.addEventListener('pointerdown',e=>{e.preventDefault();startPoint={x:e.clientX,value:state.steer,id:e.pointerId};state.dragSteer=state.steer;steeringWheel.setPointerCapture(e.pointerId);});
-steeringWheel.addEventListener('pointermove',e=>{if(!startPoint||e.pointerId!==startPoint.id)return;e.preventDefault();state.dragSteer=clamp(startPoint.value+(e.clientX-startPoint.x)/Math.max(52,steeringWheel.getBoundingClientRect().width*.78),-1,1);});
-function releaseWheel(){startPoint=null;state.dragSteer=null;}
+function pointerAngle(e){const b=steeringWheel.getBoundingClientRect();return Math.atan2(e.clientY-(b.top+b.height/2),e.clientX-(b.left+b.width/2));}
+steeringWheel.addEventListener('pointerdown',e=>{e.preventDefault();startPoint={angle:pointerAngle(e),id:e.pointerId};try{steeringWheel.setPointerCapture(e.pointerId);}catch(_){}});
+steeringWheel.addEventListener('pointermove',e=>{
+ if(!startPoint||e.pointerId!==startPoint.id)return;
+ e.preventDefault();const angle=pointerAngle(e);let delta=angle-startPoint.angle;
+ if(delta>Math.PI)delta-=2*Math.PI;
+ if(delta<-Math.PI)delta+=2*Math.PI;
+ // Rotating one and a half turns reaches full lock; letting go retains the steering position.
+ state.steerTarget=clamp(state.steerTarget+delta/(Math.PI*3),-1,1);startPoint.angle=angle;
+});
+function releaseWheel(){startPoint=null;}
 for(const event of ['pointerup','pointercancel','lostpointercapture'])steeringWheel.addEventListener(event,releaseWheel);
 window.addEventListener('blur',releaseWheel);
 
 // For classroom troubleshooting and automated QA, read-only public diagnostics.
-window.QuyetThangSaHinhDebug=Object.freeze({getState:()=>({cls:state.cls,mode:state.mode,lesson:state.lesson,view:state.view,gear:state.car?.gear,belt:state.car?.belt,signal:state.car?.signal,steer:state.steer,score:state.score,errors:state.errors.length,position:state.car?{x:state.car.x,y:state.car.y,heading:state.car.heading,speed:state.car.speed}:null,finished:state.finished}),lessonCount:()=>list().length});
-resetAll();if(isPhone()){state.view=1;updateUI();}requestAnimationFrame(frame);if(!isPhone())announce('Mời chọn bài, cài dây an toàn và bắt đầu luyện lái.');
+window.QuyetThangSaHinhDebug=Object.freeze({getState:()=>({cls:state.cls,mode:state.mode,lesson:state.lesson,view:state.view,gear:state.car?.gear,belt:state.car?.belt,signal:state.car?.signal,steer:state.steer,steerTarget:state.steerTarget,camera:{...state.camera},score:state.score,errors:state.errors.length,position:state.car?{x:state.car.x,y:state.car.y,heading:state.car.heading,speed:state.car.speed}:null,finished:state.finished}),lessonCount:()=>list().length});
+try{const entries=JSON.parse(window.localStorage?.getItem('qt-dat-practice-history-v1')||'[]');if(Array.isArray(entries))state.datHistory=entries.slice(-20).filter(x=>x&&typeof x.name==='string'&&typeof x.km==='string');}catch(_){}
+renderDatHistory();
+resetAll();if(isPhone()){state.view=0;updateUI();}requestAnimationFrame(frame);if(!isPhone())announce('Mời chọn bài, cài dây an toàn và bắt đầu luyện lái.');
 })();

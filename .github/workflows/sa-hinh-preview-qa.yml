@@ -1,0 +1,38 @@
+name: Sa Hinh Preview QA
+on:
+  push:
+    branches:
+      - feature/sa-hinh-v5-camera-steering-dat
+  pull_request:
+    paths:
+      - public/sa-hinh/**
+      - scripts/test-sa-hinh.cjs
+      - .github/workflows/sa-hinh-preview-qa.yml
+permissions:
+  contents: read
+jobs:
+  smoke:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Check JavaScript syntax
+        run: |
+          node --check public/sa-hinh/simulator.js
+          node --check scripts/test-sa-hinh.cjs
+      - name: Test simulator controls and DAT isolation
+        run: node scripts/test-sa-hinh.cjs
+      - name: Install browser automation
+        run: npm install --no-save playwright@1.58.2
+      - name: Install Chromium
+        run: npx playwright install chromium --with-deps
+      - name: Browser portrait and landscape QA
+        run: node scripts/test-sa-hinh-browser.cjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: sa-hinh-v5-viewport-screenshots
+          path: test-artifacts/
+          if-no-files-found: ignore

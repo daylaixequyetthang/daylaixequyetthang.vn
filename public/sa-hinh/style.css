@@ -126,3 +126,39 @@ body.drawerOpen{overflow:hidden}
 @media(max-width:1024px) and (orientation:portrait){.wheel{width:min(30vw,124px);height:min(30vw,124px)}}
 /* Make quick-control strip fill its reserved touch target rather than collapsing. */
 @media(max-width:1024px){.signalsPanel .signals{height:100%;align-items:stretch}.signalsPanel .signal{height:100%;min-height:0}.turnBtn{width:32px;height:32px}}
+
+/* V5: camera orbit, real training-centre branding, touch-safe cockpit. */
+.identityLogo{object-fit:contain;background:#fff;border-radius:50%;padding:3px;box-shadow:0 5px 16px #0004;letter-spacing:normal}
+.modeGroup{grid-template-columns:repeat(3,minmax(0,1fr));gap:4px}
+.modeGroup button{min-width:0;white-space:normal;line-height:1.25;padding:6px 3px}
+.wheelStatus{display:flex;align-items:center;gap:7px}
+.wheelStatus button{color:#d8ebff;border:1px solid #3f6794;background:#1b395d;border-radius:7px;padding:4px 7px;font-size:10px;font-weight:800;touch-action:manipulation}
+.cameraTools{display:none;position:absolute;right:12px;top:12px;z-index:8;align-items:center;gap:4px;background:#09172bc9;border:1px solid #35577a;border-radius:12px;padding:4px;box-shadow:0 4px 16px #0005}
+body.orbitView .cameraTools{display:flex}
+.cameraTools button{display:grid;place-items:center;width:33px;height:33px;border:1px solid #476a90;border-radius:8px;color:#f4fbff;background:#204064;font-size:20px;font-weight:700;touch-action:manipulation}
+.cameraTools button:active{background:#377eb7}
+.controls button,.wheel,.screen,.cameraTools{-webkit-touch-callout:none;-webkit-user-select:none;user-select:none}
+.turnBtn,.pedal,.wheel{touch-action:none;overscroll-behavior:contain}
+.steeringHint{line-height:1.45;text-align:center}
+@media(max-width:1024px){
+ .cameraTools{right:7px;top:7px;padding:3px;gap:3px;border-radius:9px}
+ .cameraTools button{width:27px;height:27px;font-size:17px}
+ .modeGroup{grid-template-columns:repeat(3,minmax(0,1fr))}
+ .wheelStatus{gap:4px}.wheelStatus button{padding:4px 5px;font-size:9px}
+ .identityLogo{padding:2px}
+}
+@media(max-width:1024px) and (orientation:landscape){
+ .cameraTools{top:7px;right:6px}
+ .cameraTools button{width:24px;height:24px;font-size:15px}
+}
+/* Practice-only DAT route selection and local history. */
+.datRoutePanel[hidden]{display:none!important}
+.datRoutePanel{display:flex;flex-direction:column;gap:8px;margin:0 0 14px;padding:12px;border:1px solid #2f5f7d;border-radius:12px;background:#0d2d39;color:#d8e9f8}
+.datRoutePanel label,.datHistoryTitle{font-size:10px;letter-spacing:.4px;font-weight:850}
+.datRoutePanel select,.datRoutePanel input{box-sizing:border-box;width:100%;max-width:100%;min-width:0;border:1px solid #49728c;border-radius:8px;padding:8px;background:#0e2338;color:#eef8ff;font-size:11px}
+.datRoutePanel input{padding:5px;font-size:10px}
+.datRoutePanel .datGpxLabel{color:#b9daf8;margin-top:4px}
+.datRoutePanel #datProgress{margin:3px 0;color:#7fe2c9;font-size:11px;font-weight:800}
+.datHistory{font-size:10px;color:#b4cbde;white-space:pre-line;line-height:1.5;max-height:125px;overflow-y:auto}
+.datWarning{font-size:9px;line-height:1.4;color:#ffc78e}
+@media(max-width:1024px){.datRoutePanel{margin:0 0 10px;padding:10px}.datRoutePanel select,.datRoutePanel input{min-height:36px}}
