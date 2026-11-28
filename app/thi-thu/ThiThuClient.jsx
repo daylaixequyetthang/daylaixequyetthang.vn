@@ -1,229 +1,83 @@
 'use client';
 import { useEffect, useMemo, useState } from 'react';
-import { QUESTIONS, EXAM_CONFIG, EXAM_STRUCTURES } from '@/lib/questions';
+import { QUESTIONS } from '@/lib/questions';
+import { CONFIG, CHAPTERS, bank, makeExam, grade } from '@/lib/gplx-engine';
+import './study-app.css';
 
-// Bốc đề đúng cấu trúc 1 hạng: đủ số câu mỗi chủ đề + đúng 1 câu điểm liệt.
-function buildExam(struct) {
-  const byTopic = {};
-  for (const q of QUESTIONS) (byTopic[q.topic] ||= []).push(q);
-  const shuffle = (arr) => [...arr].sort(() => Math.random() - 0.5);
-
-  const chosen = [];
-  const usedIds = new Set();
-
-  // 1 câu điểm liệt trước (ưu tiên lấy từ nhóm quy tắc vì phần lớn điểm liệt ở đó)
-  const critPool = shuffle(QUESTIONS.filter((q) => q.critical));
-  if (critPool.length) { chosen.push(critPool[0]); usedIds.add(critPool[0].id); }
-
-  // các chủ đề theo số lượng quy định (loại trừ câu điểm liệt để mỗi đề chỉ có đúng 1)
-  for (const [topic, count] of Object.entries(struct.topics)) {
-    const pool = shuffle((byTopic[topic] || []).filter((q) => !usedIds.has(q.id) && !q.critical));
-    let need = count;
-    // nếu câu điểm liệt đã lấy thuộc topic này thì bớt 1
-    if (chosen[0] && chosen[0].topic === topic) need = Math.max(0, need - 1);
-    for (let i = 0; i < need && i < pool.length; i++) { chosen.push(pool[i]); usedIds.add(pool[i].id); }
-  }
-  // bù cho đủ tổng nếu thiếu (cũng tránh câu điểm liệt)
-  if (chosen.length < struct.total) {
-    const rest = shuffle(QUESTIONS.filter((q) => !usedIds.has(q.id) && !q.critical));
-    for (const q of rest) { if (chosen.length >= struct.total) break; chosen.push(q); usedIds.add(q.id); }
-  }
-  return shuffle(chosen).slice(0, struct.total);
+const KEY='qt-gplx-v2';
+const LABELS={A1:'Xe máy',A:'Mô tô',B1:'Mô tô ba bánh',B:'Ô tô con',C1:'Xe tải 3,5–7,5 tấn',C:'Xe tải trên 7,5 tấn'};
+const ICONS={all:'book',critical:'alert',wrong:'retry',saved:'bookmark',unseen:'clock',exam:'exam',sign:'sign',history:'chart'};
+function Icon({name,size=22}) {
+ const paths={home:'M3 10l9-7 9 7v10h-6v-7H9v7H3z',book:'M4 5h6a2 2 0 0 1 2 2v14a3 3 0 0 0-3-3H4z M20 5h-6a2 2 0 0 0-2 2v14a3 3 0 0 1 3-3h5z',exam:'M7 4h10v3H7z M5 6H3v15h18V6h-2 M8 12l2 2 5-5 M8 17h8',alert:'M12 3L2 21h20z M12 9v5 M12 17h.01',retry:'M4 11a8 8 0 1 1 2 7 M4 4v7h7',bookmark:'M6 3h12v18l-6-4-6 4z',clock:'M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18 M12 7v5l4 2',sign:'M12 2l10 10-10 10L2 12z M12 7v6 M12 16h.01',chart:'M4 20V4 M4 20h16 M8 16v-5 M12 16V7 M16 16v-8',chevron:'M9 6l6 6-6 6',back:'M15 5l-7 7 7 7',grid:'M3 3h7v7H3z M14 3h7v7h-7z M3 14h7v7H3z M14 14h7v7h-7z',check:'M4 12l5 5L20 6',close:'M5 5l14 14 M19 5L5 19'};
+ return <svg aria-hidden="true" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d={paths[name]||paths.book}/></svg>;
 }
-
-export default function ThiThuClient() {
-  const [started, setStarted] = useState(false);
-  const [mode, setMode] = useState('exam'); // exam | study
-  const [hang, setHang] = useState('B');
-  const [answers, setAnswers] = useState({});
-  const [cur, setCur] = useState(0);
-  const [submitted, setSubmitted] = useState(false);
-  const struct = EXAM_STRUCTURES[hang] || EXAM_STRUCTURES.B;
-  const [time, setTime] = useState(struct.durationSec);
-
-  const quiz = useMemo(() => {
-    if (mode === 'study') {
-      return [...QUESTIONS].sort(() => Math.random() - 0.5).slice(0, 60);
-    }
-    return buildExam(struct);
-  }, [started, mode, hang]);
-
-  useEffect(() => {
-    if (!started || submitted || mode !== 'exam') return;
-    if (time <= 0) { setSubmitted(true); return; }
-    const t = setTimeout(() => setTime((s) => s - 1), 1000);
-    return () => clearTimeout(t);
-  }, [started, submitted, time, mode]);
-
-  const correct = quiz.filter((q) => answers[q.id] === q.answer).length;
-  const failedCritical = quiz.some((q) => q.critical && answers[q.id] !== undefined && answers[q.id] !== q.answer);
-  const passed = correct >= struct.pass && !failedCritical;
-
-  function pick(qid, idx) {
-    if (submitted) return;
-    setAnswers((a) => ({ ...a, [qid]: idx }));
-    if (mode === 'exam' && cur < quiz.length - 1) setTimeout(() => setCur((c) => c + 1), 150);
-  }
-  function reset() {
-    setStarted(false); setSubmitted(false); setAnswers({}); setCur(0); setTime(struct.durationSec);
-  }
-
-  const mm = String(Math.floor(time / 60)).padStart(2, '0');
-  const ss = String(time % 60).padStart(2, '0');
-  const q = quiz[cur];
-
-  return (
-    <div className="tt">
-      <header className="tt-hdr">
-        <a href="/" className="tt-back">← Trang chủ</a>
-        <b>Thi thử GPLX — 600 câu</b>
-        {started && mode === 'exam' && !submitted && <span className={`tt-time ${time < 60 ? 'low' : ''}`}>⏱ {mm}:{ss}</span>}
-      </header>
-
-      {!started && (
-        <div className="tt-intro">
-          <h1>📝 Thi thử lý thuyết GPLX</h1>
-          <p>Bộ 600 câu hỏi sát hạch chính thức của Cục CSGT (áp dụng từ 01/6/2025). Chọn hạng và chế độ để bắt đầu.</p>
-
-          <div className="tt-hang">
-            <span className="tt-hang-lb">Chọn hạng thi:</span>
-            <div className="tt-hang-btns">
-              {Object.entries(EXAM_STRUCTURES).map(([k, v]) => (
-                <button key={k} className={`tt-hbtn ${hang === k ? 'on' : ''}`} onClick={() => setHang(k)}>
-                  {v.label}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <div className="tt-modes">
-            <button className="tt-mode" onClick={() => { setMode('exam'); setTime(struct.durationSec); setStarted(true); }}>
-              <b>🎯 Thi thử (tính giờ)</b>
-              <span>{struct.total} câu · {Math.round(struct.durationSec / 60)} phút · cần đúng ≥{struct.pass} câu · đúng cấu trúc đề thật</span>
-            </button>
-            <button className="tt-mode alt" onClick={() => { setMode('study'); setStarted(true); }}>
-              <b>📖 Ôn tập (xem đáp án)</b>
-              <span>Hiện đáp án ngay sau khi chọn, không giới hạn thời gian</span>
-            </button>
-          </div>
-          <p className="tt-note">⚠️ Câu có gắn nhãn <b style={{ color: '#ff5d73' }}>ĐIỂM LIỆT</b>: sai 1 câu là trượt cả bài. Mỗi đề thi luôn có 1 câu điểm liệt.</p>
-        </div>
-      )}
-
-      {started && !submitted && q && (
-        <div className="tt-quiz">
-          <div className="tt-progress"><div style={{ width: `${((cur + 1) / quiz.length) * 100}%` }} /></div>
-          <div className="tt-meta">
-            <span>Câu {cur + 1}/{quiz.length}</span>
-            <span className="tt-topic">{q.topic}{q.critical && <b className="tt-crit"> · ĐIỂM LIỆT</b>}</span>
-          </div>
-          <h2 className="tt-q">{q.q}</h2>
-          {q.image && (
-            <div className="tt-img">
-              <img src={q.image} alt="Hình minh họa câu hỏi" loading="lazy" />
-              <span className="tt-img-wm">daylaixequyetthang.vn · ☎ 084 875 1111</span>
-            </div>
-          )}
-          <div className="tt-opts">
-            {q.options.map((opt, idx) => {
-              const chosen = answers[q.id] === idx;
-              const showAns = mode === 'study' && answers[q.id] !== undefined;
-              const isRight = idx === q.answer;
-              let cls = 'tt-opt';
-              if (chosen) cls += ' chosen';
-              if (showAns && isRight) cls += ' right';
-              if (showAns && chosen && !isRight) cls += ' wrong';
-              return (
-                <button key={idx} className={cls} onClick={() => pick(q.id, idx)}>
-                  <span className="tt-letter">{String.fromCharCode(65 + idx)}</span>{opt}
-                </button>
-              );
-            })}
-          </div>
-          <div className="tt-nav">
-            <button className="btn-nav" disabled={cur === 0} onClick={() => setCur((c) => c - 1)}>← Câu trước</button>
-            {cur < quiz.length - 1
-              ? <button className="btn-nav main" onClick={() => setCur((c) => c + 1)}>Câu sau →</button>
-              : <button className="btn-nav main" onClick={() => setSubmitted(true)}>Nộp bài</button>}
-          </div>
-          <div className="tt-grid-nav">
-            {quiz.map((qq, i) => (
-              <button key={qq.id} className={`gn ${answers[qq.id] !== undefined ? 'done' : ''} ${i === cur ? 'now' : ''}`} onClick={() => setCur(i)}>{i + 1}</button>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {submitted && (
-        <div className="tt-result">
-          <div className={`tt-badge ${passed ? 'pass' : 'fail'}`}>{passed ? '🎉 ĐẠT' : '❌ CHƯA ĐẠT'}</div>
-          <h2>Đúng {correct}/{quiz.length} câu</h2>
-          {failedCritical && <p className="tt-crit-msg">Bạn đã sai câu điểm liệt — trượt bài thi.</p>}
-          <p className="tt-sub">{passed ? 'Tuyệt vời! Bạn đã sẵn sàng. Đăng ký khóa học để được cấp bằng nhé.' : 'Cần ôn thêm. Chế độ "Ôn tập" giúp bạn xem đáp án từng câu.'}</p>
-          <div className="tt-result-cta">
-            <button className="btn btn-blue" onClick={reset}>Làm lại</button>
-            <a className="btn btn-cta" href="/#dangky">Đăng ký học ngay</a>
-          </div>
-        </div>
-      )}
-
-      <style jsx>{`
-        .tt{min-height:100vh;background:var(--grad-soft)}
-        .tt-hdr{position:sticky;top:0;z-index:10;display:flex;align-items:center;justify-content:space-between;padding:14px 22px;background:rgba(255,255,255,.9);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
-        .tt-hdr b{font-family:var(--font-display);color:var(--ink)}
-        .tt-back{font-weight:600;color:var(--blue);display:inline-flex;align-items:center;min-height:44px;padding:4px 0}
-        .tt-time{font-family:var(--font-display);font-weight:800;color:var(--violet);background:rgba(139,47,230,.1);padding:5px 12px;border-radius:999px}
-        .tt-time.low{color:#fff;background:var(--coral);animation:pulseRing 1s infinite}
-        .tt-intro{max-width:680px;margin:0 auto;padding:56px 22px;text-align:center}
-        .tt-intro h1{font-size:2rem;font-weight:800;margin-bottom:10px}
-        .tt-intro p{color:var(--muted);margin-bottom:26px}
-        .tt-hang{margin-bottom:20px}
-        .tt-hang-lb{display:block;font-weight:700;color:var(--ink);margin-bottom:10px;font-size:.95rem}
-        .tt-hang-btns{display:flex;flex-wrap:wrap;gap:10px}
-        .tt-hbtn{padding:12px 18px;min-height:46px;border-radius:12px;border:1.5px solid var(--line);background:#fff;color:var(--ink-soft);font-weight:600;font-size:.92rem;cursor:pointer;transition:all .15s}
-        .tt-hbtn.on{background:var(--grad-hero);color:#fff;border-color:transparent}
-        .tt-modes{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:22px}
-        .tt-mode{background:var(--grad-hero);color:#fff;border:0;border-radius:18px;padding:24px;text-align:left;transition:transform .18s;box-shadow:var(--shadow-soft)}
-        .tt-mode.alt{background:var(--grad-mint)}
-        .tt-mode:hover{transform:translateY(-4px)}
-        .tt-mode b{display:block;font-size:1.1rem;font-family:var(--font-display);margin-bottom:6px}
-        .tt-mode span{font-size:.84rem;opacity:.92}
-        .tt-note{font-size:.86rem;color:var(--muted)}
-        .tt-quiz{max-width:720px;margin:0 auto;padding:26px 22px 60px}
-        .tt-progress{height:7px;background:var(--line);border-radius:999px;overflow:hidden;margin-bottom:16px}
-        .tt-progress div{height:100%;background:var(--grad-cta);transition:width .3s}
-        .tt-meta{display:flex;justify-content:space-between;font-size:.82rem;color:var(--muted);margin-bottom:12px}
-        .tt-topic{font-weight:600}
-        .tt-crit{color:var(--coral)}
-        .tt-q{font-size:1.3rem;font-weight:700;color:var(--ink);margin-bottom:22px;line-height:1.4}
-        .tt-img{position:relative;margin:0 0 22px;border-radius:14px;overflow:hidden;border:1px solid var(--line);background:#fff}
-        .tt-img img{width:100%;max-height:300px;object-fit:contain;display:block}
-        .tt-img-wm{position:absolute;right:6px;bottom:6px;background:rgba(20,16,60,.72);color:#fff;font-size:.68rem;font-weight:600;padding:3px 8px;border-radius:6px;letter-spacing:.2px;pointer-events:none}
-        .tt-opts{display:flex;flex-direction:column;gap:12px}
-        .tt-opt{display:flex;gap:14px;align-items:flex-start;text-align:left;background:#fff;border:1.5px solid var(--line);border-radius:14px;padding:16px 18px;font-size:.98rem;color:var(--ink-soft);transition:all .15s}
-        .tt-opt:hover{border-color:var(--blue)}
-        .tt-opt.chosen{border-color:var(--blue);background:rgba(37,99,255,.06)}
-        .tt-opt.right{border-color:var(--lime);background:rgba(39,224,166,.1);color:#0a8f63}
-        .tt-opt.wrong{border-color:var(--coral);background:rgba(255,93,115,.08);color:#d83a52}
-        .tt-letter{width:28px;height:28px;border-radius:8px;background:var(--bg);display:grid;place-items:center;font-family:var(--font-display);font-weight:800;flex:0 0 auto;font-size:.85rem}
-        .tt-nav{display:flex;gap:12px;margin-top:24px}
-        .btn-nav{flex:1;padding:14px;border-radius:13px;border:1.5px solid var(--line);background:#fff;font-family:var(--font-display);font-weight:700;color:var(--ink-soft)}
-        .btn-nav.main{background:var(--grad-hero);color:#fff;border:0}
-        .btn-nav:disabled{opacity:.4}
-        .tt-grid-nav{display:flex;flex-wrap:wrap;gap:8px;margin-top:24px}
-        .gn{width:36px;height:36px;border-radius:9px;border:1.5px solid var(--line);background:#fff;font-weight:700;color:var(--muted)}
-        .gn.done{background:rgba(37,99,255,.12);color:var(--blue);border-color:transparent}
-        .gn.now{background:var(--grad-cta);color:#fff;border-color:transparent}
-        .tt-result{max-width:560px;margin:0 auto;padding:56px 22px;text-align:center}
-        .tt-badge{display:inline-block;font-family:var(--font-display);font-weight:800;font-size:1.1rem;padding:10px 24px;border-radius:999px;margin-bottom:18px}
-        .tt-badge.pass{background:rgba(39,224,166,.16);color:#0a8f63}
-        .tt-badge.fail{background:rgba(255,93,115,.14);color:#d83a52}
-        .tt-result h2{font-size:1.8rem;font-weight:800;margin-bottom:8px}
-        .tt-crit-msg{color:var(--coral);font-weight:600;margin-bottom:8px}
-        .tt-sub{color:var(--muted);margin-bottom:24px}
-        .tt-result-cta{display:flex;gap:12px;justify-content:center}
-        @media(max-width:560px){.tt-modes{grid-template-columns:1fr}}
-      `}</style>
-    </div>
-  );
+const empty=()=>({seen:{},saved:[],history:[],last:null});
+const validHang=h=>Object.prototype.hasOwnProperty.call(CONFIG,h);
+const timeText=t=>String(Math.floor(t/60)).padStart(2,'0')+':'+String(t%60).padStart(2,'0');
+export default function ThiThuClient(){
+ const [ready,setReady]=useState(false),[data,setData]=useState({}),[hang,setHang]=useState('B'),[tab,setTab]=useState('home'),[run,setRun]=useState(null),[now,setNow]=useState(0),[showGrid,setShowGrid]=useState(false),[zoom,setZoom]=useState(null),[query,setQuery]=useState(''),[error,setError]=useState(''),[persistError,setPersistError]=useState(false),[confirm,setConfirm]=useState(null);
+ useEffect(()=>{try{const s=JSON.parse(localStorage.getItem(KEY)||'null');if(s&&typeof s==='object'){if(s.data&&typeof s.data==='object')setData(s.data);if(validHang(s.hang))setHang(s.hang);if(s.run&&validHang(s.run.hang)&&Array.isArray(s.run.ids)&&s.run.ids.length&&['study','exam','review'].includes(s.run.mode))setRun(s.run)}}catch{}setNow(Date.now());setReady(true)},[]);
+ useEffect(()=>{if(!ready)return;try{localStorage.setItem(KEY,JSON.stringify({data,hang,run}));setPersistError(false)}catch{setPersistError(true)}},[ready,data,hang,run]);
+ const activeHang=run?.hang||hang;
+ const pool=useMemo(()=>bank(activeHang,QUESTIONS),[activeHang]);
+ const byId=useMemo(()=>Object.fromEntries(pool.map(q=>[q.id,q])),[pool]);
+ const stats=data[activeHang]||empty();
+ const qs=useMemo(()=>run?run.ids.map(id=>byId[id]).filter(Boolean):[],[run?.ids,byId]);
+ const q=qs[run?.cur||0];
+ const answered=run?qs.filter(x=>run.answers[x.id]!==undefined).length:0;
+ const remaining=run?.deadline?Math.max(0,Math.ceil((run.deadline-now)/1000)):0;
+ const isExam=run?.mode==='exam',isReview=run?.mode==='review',isStudy=run?.mode==='study';
+ const result=run&&run.done&&isExam?grade(qs,run.answers,activeHang):null;
+ const counts=CONFIG[hang];
+ function updateStats(h,fn){setData(old=>({...old,[h]:fn(old[h]||empty())}))}
+ function record(h,list,answers,history){updateStats(h,prev=>{const seen={...prev.seen};for(const item of list){if(answers[item.id]===undefined)continue;const prevItem=seen[item.id]||{wrongCount:0,tries:0};const correct=answers[item.id]===item.answer;seen[item.id]={correct,tries:prevItem.tries+1,wrongCount:prevItem.wrongCount+(correct?0:1)}}return {...prev,seen,history:history?[history,...prev.history.filter(x=>x.id!==history.id)].slice(0,100):prev.history}})}
+ function finish(r=run){if(!r||r.done||r.mode!=='exam')return;const list=r.ids.map(id=>byId[id]).filter(Boolean);const g=grade(list,r.answers,r.hang);record(r.hang,list,r.answers,{id:r.id,at:Date.now(),label:r.label,ids:r.ids,answers:r.answers,elapsed:Math.min(CONFIG[r.hang][2]*60,Math.max(0,Math.round((Date.now()-r.started)/1000))),...g});setRun(old=>old?.id===r.id?{...old,done:true}:old);setConfirm(null);setShowGrid(false)}
+ useEffect(()=>{if(!ready||!isExam||run.done)return;const tick=()=>setNow(Date.now());tick();const t=setInterval(tick,250);return()=>clearInterval(t)},[ready,isExam,run?.id,run?.done]);
+ useEffect(()=>{if(ready&&isExam&&!run.done&&now>=run.deadline)finish(run)},[ready,now,run?.id,run?.done,run?.deadline]);
+ function start(list,mode,label,position=0){if(!list.length){setError('Chưa có câu hỏi trong mục này.');return}setError('');setShowGrid(false);setQuery('');const started=Date.now();setNow(started);setRun({id:started+'-'+Math.random().toString(36).slice(2),hang,ids:list.map(x=>x.id),answers:{},mode,label,cur:position,started,deadline:mode==='exam'?started+CONFIG[hang][2]*60000:null,done:false});window.scrollTo(0,0)}
+ function launchExam(i){try{start(makeExam(hang,QUESTIONS,i===null?undefined:10000+i+Object.keys(CONFIG).indexOf(hang)*1000),'exam',i===null?'Đề ngẫu nhiên':'Đề luyện '+String(i).padStart(2,'0'))}catch(e){setError(e.message)}}
+ function filterList(k){return pool.filter(x=>k==='all'||k==='critical'&&x.critical||k==='wrong'&&stats.seen[x.id]?.correct===false||k==='saved'&&stats.saved.includes(x.id)||k==='unseen'&&!stats.seen[x.id]||k==='sign'&&x.id>=301&&x.id<=485)}
+ function openStudy(k,label){start(filterList(k),'study',label)}
+ function pick(idx){if(!q||run.done||isReview||(isExam&&Date.now()>=run.deadline))return;if(isStudy&&run.answers[q.id]!==undefined)return;setRun(old=>({...old,answers:{...old.answers,[q.id]:idx}}));if(isStudy)record(activeHang,[q],{[q.id]:idx})}
+ function go(i){if(i<0||i>=qs.length)return;setRun(old=>({...old,cur:i}));setShowGrid(false);window.scrollTo(0,0)}
+ function toggleSaved(id){updateStats(activeHang,old=>({...old,saved:old.saved.includes(id)?old.saved.filter(x=>x!==id):[...old.saved,id]}))}
+ function leave(){if(isExam&&!run.done){setConfirm('leave');return}if(isStudy)updateStats(activeHang,old=>({...old,last:{ids:run.ids,cur:run.cur,label:run.label}}));setRun(null);setShowGrid(false);setConfirm(null);window.scrollTo(0,0)}
+ function switchTab(t){setTab(t);setError('');setQuery('');window.scrollTo(0,0)}
+ function review(h){setRun({id:'review-'+h.id,hang,ids:h.ids,answers:h.answers,cur:0,mode:'review',label:h.label,done:false});setShowGrid(false);window.scrollTo(0,0)}
+ const learned=pool.filter(x=>stats.seen[x.id]).length,mastered=pool.filter(x=>stats.seen[x.id]?.correct).length;
+ const percent=pool.length?Math.round(mastered/pool.length*100):0;
+ const topicCards=[['all','Tất cả câu hỏi'],['critical','Câu điểm liệt'],['wrong','Câu trả lời sai'],['saved','Câu đã lưu'],['unseen','Câu chưa học']];
+ const tile=(k,title)=> <button className={'qt-tile qt-'+k} key={k} onClick={()=>openStudy(k,title)}><span className="qt-ico"><Icon name={ICONS[k]}/></span><strong>{title}</strong><small>{filterList(k).length} câu</small><span className="qt-arrow"><Icon name="chevron" size={16}/></span></button>;
+ const chapterList=c=>pool.filter(x=>x.id>=c.from&&x.id<=c.to);
+ const scoreBadge=x=>x.passed?'ĐẠT':'CHƯA ĐẠT';
+ return <div className="qt-app">
+ <header className="qt-header"><div className="qt-header-inner">
+ {run?<button className="qt-icon-btn" aria-label="Quay lại" onClick={leave}><Icon name="back"/></button>:<a href="/" className="qt-brand" aria-label="Trang chủ Quyết Thắng"><img src="/logo.png" alt="Logo Quyết Thắng"/><span><b>QUYẾT THẮNG</b><small>ÔN THI GPLX</small></span></a>}
+ {run?<div className="qt-run-title"><b>{run.label}</b><small>Hạng {activeHang} · {run.cur+1}/{qs.length}</small></div>:<label className="qt-select"><span>Hạng</span><select aria-label="Chọn hạng giấy phép lái xe" value={hang} onChange={e=>{setHang(e.target.value);setError('')}}>{Object.keys(CONFIG).map(h=><option key={h} value={h}>{h}</option>)}</select></label>}
+ {run&&(isExam&&!run.done?<span className={'qt-timer '+(remaining<60?'qt-danger':'')}>{timeText(remaining)}</span>:q&&!run.done?<button className={'qt-icon-btn '+(stats.saved.includes(q.id)?'qt-mark':'')} onClick={()=>toggleSaved(q.id)} aria-label="Lưu câu hỏi" aria-pressed={stats.saved.includes(q.id)}><Icon name="bookmark"/></button>:null)}
+ </div></header>
+ <main className={'qt-main '+(run?'qt-running':'')}>
+ {persistError&&<p className="qt-warning">Trình duyệt không cho lưu dữ liệu; tiến độ có thể mất khi thoát.</p>}
+ {!ready?<div className="qt-panel">Đang tải dữ liệu ôn tập…</div>:!run?<>
+ {tab==='home'&&<><section className="qt-hero"><div><span className="qt-eyebrow">ÔN THI LÝ THUYẾT 2026</span><h1>Hạng {hang} · {LABELS[hang]||'Nâng hạng GPLX'}</h1><p>Học đúng kiến thức. Tự tin sát hạch.</p><button className="qt-white" onClick={()=>switchTab('exam')}>Thi thử ngay <Icon name="chevron" size={17}/></button></div><div className="qt-ring" style={{'--pct':percent+'%'}}><span><b>{percent}%</b><small>Đúng gần nhất</small></span></div></section>
+ <div className="qt-stats"><div><b>{learned}/{pool.length}</b><small>Đã học</small></div><div><b>{mastered}</b><small>Trả lời đúng gần nhất</small></div><div><b>{stats.history.length}</b><small>Lượt thi</small></div></div>
+ <div className="qt-section-head"><h2>Ôn tập thông minh</h2><button onClick={()=>switchTab('study')}>Xem tất cả <Icon name="chevron" size={14}/></button></div><div className="qt-tiles">{topicCards.map(([k,t])=>tile(k,t))}{tile('sign','Biển báo')}</div>
+ {stats.last&&<button className="qt-continue" onClick={()=>{const list=stats.last.ids.map(id=>byId[id]).filter(Boolean);start(list,'study',stats.last.label,Math.min(stats.last.cur,list.length-1))}}><Icon name="clock"/> Tiếp tục ôn tập <Icon name="chevron"/></button>}
+ <section className="qt-panel qt-info"><h3>Thi sát hạch theo hạng {hang}</h3><p>{counts[0]} câu · {counts[2]} phút · Đạt từ {counts[1]} câu và không sai câu điểm liệt.</p><small>Cấu trúc hiện hành đến 28/02/2027. Quy định mới từ 01/03/2027 cần cập nhật riêng.</small></section></>}
+ {tab==='study'&&<><h1>Ôn tập lý thuyết</h1><p className="qt-muted">Học theo thứ tự, từng chương hoặc nhóm câu cần luyện thêm.</p><div className="qt-tiles">{topicCards.map(([k,t])=>tile(k,t))}</div><h2>Ôn theo chương</h2><div className="qt-list">{CHAPTERS.map((c,i)=>{const items=chapterList(c);const n=items.filter(x=>stats.seen[x.id]?.correct).length;return items.length>0&&<button className="qt-chapter" key={c.from} onClick={()=>start(items,'study',c.name)}><span className="qt-number">{i+1}</span><span><b>{c.name}</b><small>{n}/{items.length} câu đã trả lời đúng gần nhất</small><span className="qt-track"><span style={{width:n/items.length*100+'%'}}/></span></span><Icon name="chevron"/></button>})}</div></>}
+ {tab==='exam'&&<><h1>Thi thử hạng {hang}</h1><section className="qt-hero qt-exam-hero"><div><span className="qt-eyebrow">ĐỀ NGẪU NHIÊN</span><h2>{counts[0]} câu · {counts[2]} phút</h2><p>Đạt từ {counts[1]} câu · 1 câu điểm liệt</p><button className="qt-white" onClick={()=>launchExam(null)}>Bắt đầu thi <Icon name="chevron" size={17}/></button></div><Icon name="exam" size={58}/></section><h2>Bộ đề luyện cố định</h2><p className="qt-muted">Đề do hệ thống tạo theo cấu trúc hiện hành, không phải đề thi chính thức.</p><div className="qt-exams">{Array.from({length:20},(_,i)=>i+1).map(i=>{const title='Đề luyện '+String(i).padStart(2,'0');const h=stats.history.find(x=>x.label===title);return <button key={i} onClick={()=>launchExam(i)}><Icon name="exam"/><b>Đề {String(i).padStart(2,'0')}</b><small className={h?(h.passed?'qt-good':'qt-danger'):''}>{h?scoreBadge(h):'Chưa thi'}</small></button>})}</div></>}
+ {tab==='sign'&&<><h1>Ôn biển báo</h1><p className="qt-muted">Hình ảnh và câu hỏi báo hiệu trong ngân hàng câu hỏi của hạng {hang}.</p><button className="qt-primary qt-wide" onClick={()=>openStudy('sign','Biển báo đường bộ')}>Ôn tất cả câu biển báo</button><input className="qt-search" placeholder="Tìm theo số câu hoặc nội dung" value={query} onChange={e=>setQuery(e.target.value)}/><div className="qt-signs">{filterList('sign').filter(x=>(x.id+' '+x.q).toLocaleLowerCase('vi').includes(query.trim().toLocaleLowerCase('vi'))).map(x=><button key={x.id} onClick={()=>start([x],'study','Biển báo · Câu '+x.id)}>{x.image&&<img loading="lazy" src={x.image} alt={'Hình câu '+x.id}/>}<b>Câu {x.id}</b><small>{x.q}</small></button>)}</div></>}
+ {tab==='history'&&<><h1>Tiến độ & kết quả</h1><div className="qt-stats"><div><b>{learned}/{pool.length}</b><small>Đã học</small></div><div><b>{percent}%</b><small>Đúng gần nhất</small></div><div><b>{stats.history.filter(x=>x.passed).length}</b><small>Lượt đạt</small></div></div><h2>Lịch sử thi thử</h2>{stats.history.length===0?<div className="qt-panel"><p>Chưa có kết quả thi thử.</p><button className="qt-primary" onClick={()=>switchTab('exam')}>Thi ngay</button></div>:<div className="qt-list">{stats.history.map(h=><button className="qt-history" key={h.id} onClick={()=>review(h)}><span className={h.passed?'qt-good':'qt-danger'}><Icon name={h.passed?'check':'close'}/></span><span><b>{h.label}</b><small>{new Date(h.at).toLocaleString('vi-VN')} · {h.correct}/{h.ids.length} câu · {timeText(h.elapsed)}</small></span><strong className={h.passed?'qt-good':'qt-danger'}>{scoreBadge(h)}</strong></button>)}</div>}<p className="qt-muted">Tiến độ được lưu trên trình duyệt này, chưa đồng bộ giữa thiết bị.</p></>}
+ {error&&<p role="alert" className="qt-warning">{error}</p>}
+ <footer className="qt-footer"><b>Trung Tâm GDNN Quyết Thắng</b><a href="tel:0848751111">Hotline 084.875.1111</a><a href="/#dangky">Đăng ký học lái xe</a><a href="/">daylaixequyetthang.vn</a></footer>
+ </>:result?<section className="qt-result"><div className={'qt-result-icon '+(result.passed?'qt-good':'qt-danger')}><Icon name={result.passed?'check':'close'} size={45}/></div><h1 className={result.passed?'qt-good':'qt-danger'}>{scoreBadge(result)}</h1><p>{run.label} · Hạng {activeHang}</p><div className="qt-big-score">{result.correct}<span>/{qs.length}</span></div><div className="qt-stats"><div><b className="qt-good">{result.correct}</b><small>Đúng</small></div><div><b className="qt-danger">{result.wrong}</b><small>Sai</small></div><div><b>{result.blank}</b><small>Bỏ trống</small></div></div>{result.criticalFail&&<p className="qt-warning">Không trả lời đúng câu điểm liệt.</p>}<button className="qt-primary qt-wide" onClick={()=>setRun(old=>({...old,mode:'review',done:false,cur:0}))}>Xem lại bài thi</button><button className="qt-secondary qt-wide" onClick={()=>{setRun(null);setTab('exam')}}>Về danh sách đề</button><a className="qt-cta" href="/#dangky">Đăng ký học lái xe · 084.875.1111</a></section>:q?<><div className="qt-progress-row"><div className="qt-track"><span style={{width:answered/qs.length*100+'%'}}/></div><small>{answered}/{qs.length} đã trả lời</small></div><section className="qt-question"><div className="qt-question-meta"><b>Câu {q.id}</b><span>{q.topic}</span>{q.critical&&<strong className="qt-critical">ĐIỂM LIỆT</strong>}</div><h2>{q.q}</h2>{q.image?<button className="qt-picture" onClick={()=>setZoom(q.image)} aria-label="Phóng to hình minh họa"><img src={q.image} alt={'Hình minh họa câu '+q.id}/><small>Chạm để phóng to</small></button>:/hình dưới đây|hình bên|hình vẽ|hình minh họa/i.test(q.q)?<p className="qt-warning">Hình minh họa câu này chưa có trong dữ liệu hiện tại.</p>:null}
+ <div className="qt-options">{q.options.map((o,i)=>{const selected=run.answers[q.id]===i;const revealed=isReview||isStudy&&run.answers[q.id]!==undefined;return <button key={i} disabled={isReview||isStudy&&run.answers[q.id]!==undefined} aria-pressed={selected} className={'qt-option '+(selected?'qt-selected ':'')+(revealed&&i===q.answer?'qt-right ':'')+(revealed&&selected&&i!==q.answer?'qt-wrong':'')} onClick={()=>pick(i)}><span>{String.fromCharCode(65+i)}</span><span>{o}</span>{revealed&&i===q.answer&&<Icon name="check" size={19}/>}</button>})}</div>
+ {(isReview||isStudy&&run.answers[q.id]!==undefined)&&<div className="qt-answer"><b className={run.answers[q.id]===q.answer?'qt-good':'qt-danger'}>{run.answers[q.id]===q.answer?'Chính xác':run.answers[q.id]===undefined?'Chưa trả lời':'Chưa chính xác'} · Đáp án {String.fromCharCode(65+q.answer)}</b><p>{q.options[q.answer]}</p>{q.explanation&&<p>{q.explanation}</p>}</div>}
+ </section><div className="qt-quiz-controls"><button className="qt-secondary" disabled={run.cur===0} onClick={()=>go(run.cur-1)}><Icon name="back"/> Trước</button><button className="qt-secondary" onClick={()=>setShowGrid(true)} aria-label="Danh sách câu hỏi"><Icon name="grid"/><span>{run.cur+1}/{qs.length}</span></button>{run.cur<qs.length-1?<button className="qt-primary" onClick={()=>go(run.cur+1)}>Sau <Icon name="chevron"/></button>:<button className="qt-primary" onClick={()=>isExam?setConfirm('submit'):leave()}>{isExam?'Nộp bài':'Kết thúc'}</button>}</div>{isExam&&<button className="qt-submit-link" onClick={()=>setConfirm('submit')}>Nộp bài thi</button>}</>:<div className="qt-panel"><p>Không tìm thấy câu hỏi.</p><button onClick={()=>setRun(null)}>Quay lại</button></div>}
+ </main>
+ {!run&&<nav className="qt-bottom"><div>{[['home','home','Trang chủ'],['study','book','Ôn tập'],['exam','exam','Thi thử'],['sign','sign','Biển báo'],['history','chart','Tiến độ']].map(([t,ic,title])=><button key={t} className={tab===t?'qt-active':''} aria-current={tab===t?'page':undefined} onClick={()=>switchTab(t)}><Icon name={ic}/><small>{title}</small></button>)}</div></nav>}
+ {showGrid&&run&&<div className="qt-overlay" onClick={()=>setShowGrid(false)}><section className="qt-sheet" role="dialog" aria-modal="true" aria-label="Danh sách câu hỏi" onClick={e=>e.stopPropagation()}><div className="qt-sheet-head"><h2>Danh sách câu hỏi</h2><button className="qt-icon-btn" onClick={()=>setShowGrid(false)} aria-label="Đóng"><Icon name="close"/></button></div><div className="qt-grid">{qs.map((x,i)=><button key={x.id} className={(i===run.cur?'qt-current ':'')+(run.answers[x.id]!==undefined?'qt-done ':'')+(!isExam&&run.answers[x.id]!==undefined&&run.answers[x.id]!==x.answer?'qt-bad':'')} onClick={()=>go(i)}>{i+1}</button>)}</div></section></div>}
+ {zoom&&<div className="qt-overlay" role="dialog" aria-modal="true" aria-label="Hình phóng to" onClick={()=>setZoom(null)}><div className="qt-zoom"><button className="qt-icon-btn" onClick={()=>setZoom(null)} aria-label="Đóng"><Icon name="close"/></button><img src={zoom} alt="Hình câu hỏi phóng to"/></div></div>}
+ {confirm&&<div className="qt-overlay"><section className="qt-dialog" role="dialog" aria-modal="true"><h2>{confirm==='submit'?'Nộp bài thi?':'Thoát bài thi?'}</h2><p>{confirm==='submit'?'Bạn còn '+(qs.length-answered)+' câu chưa trả lời.':'Nếu kết thúc bây giờ, các câu chưa trả lời sẽ được tính là bỏ trống.'}</p><div><button className="qt-secondary" onClick={()=>setConfirm(null)}>Tiếp tục</button><button className="qt-primary" onClick={()=>{finish()}}>{confirm==='submit'?'Nộp bài':'Kết thúc & chấm điểm'}</button></div></section></div>}
+ </div>
 }
